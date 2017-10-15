@@ -369,3 +369,15 @@ function syncHutangPelangganAjax(){
 	print $totalSync;
 	exit;
 }
+function get_pelanggan_info(){
+    if (isset($_POST['idpelanggan']) && !empty($_POST['idpelanggan'])){
+        $IdPelanggan = $_POST['idpelanggan'];
+        $StrSQL = "SELECT idpelanggan, kodepelanggan, namapelanggan, telp, alamat, email, url_database, username, ";
+        $StrSQL .= "password FROM pelanggan WHERE idpelanggan='%d'";
+        $result = db_query($StrSQL,$IdPelanggan);
+        $data[] = db_fetch_object($result);
+        print json_encode($data);
+        exit();
+    }
+    exit();
+}

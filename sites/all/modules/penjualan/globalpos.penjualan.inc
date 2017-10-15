@@ -11,7 +11,6 @@ function view_tabel_penjualan(){
 		$tgl1 = date("Y-m-d");
 		$tgl2 = date("Y-m-d");
 	}
-	$addedFilter = '';
 	$filterId = 0;
 	if ($_POST["pilihantampil"] == 'NOTA'){
 		$nota = 'selected="selected"';

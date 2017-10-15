@@ -12,6 +12,8 @@ var settings = {
 };
 var statusstok = 0;
 var statusproduct = 1;
+var alamatServer = '';
+
 function tampilkantabelproduk(){
     oTable = $('#tabel_produk').DataTable( {
         'bJQueryUI': true,
@@ -20,7 +22,7 @@ function tampilkantabelproduk(){
         'bInfo': true,
         'processing': true,
         'serverSide': true,
-        'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=produk&statusstok='+ statusstok +'&status_product='+ statusproduct,
+        'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=produk&statusstok='+ statusstok +'&status_product='+ statusproduct,
         'aoColumns': [
             { 'bSortable': false },null,null,null,null,null,null,null,
             null,{ 'bVisible': false },{ 'bVisible': false },
@@ -38,7 +40,7 @@ function tampilkantabelproduk(){
         'sDom': '<"button-div"B><"H"lfr>t<"F"ip>',
         'createdRow': function ( row, data, index ) {
             row.id = data[(data.length - 1)];
-            var alamatKategori = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=kategori&idproduk='+ row.id;
+            var alamatKategori = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=kategori&idproduk='+ row.id;
             $('td', row).eq(1).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 1 };
@@ -51,7 +53,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            var alamatSubKategori = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=subkategori&idproduk='+ row.id;
+            var alamatSubKategori = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=subkategori&idproduk='+ row.id;
             $('td', row).eq(2).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 2 };
@@ -64,7 +66,7 @@ function tampilkantabelproduk(){
                 'indicator': 'Menyimpan...',
                 'tooltip': 'Klik untuk mengubah...'
             });
-            var alamatsupplier = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=supplier&idproduk='+ row.id;
+            var alamatsupplier = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=supplier&idproduk='+ row.id;
             $('td', row).eq(3).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 11 };
@@ -159,7 +161,7 @@ function tampilkantabelproduk(){
                 'tooltip': 'Klik untuk mengubah...'
             });
             $('td', row).eq(10).addClass('center');
-            var alamatSatuan = Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=satuan&idproduk='+ row.id;
+            var alamatSatuan = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=satuan&idproduk='+ row.id;
             $('td', row).eq(11).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 10 };
@@ -490,6 +492,7 @@ $(document).ready(function() {
     alamatupdate = Drupal.settings.basePath + 'dataproduk/updateproduk';
     statusstok = Drupal.settings.statusstokfilter;
     statusproduct = Drupal.settings.statusproduct;
+    alamatServer = Drupal.settings.basePath;
     $('#dialogtambahkategori').dialog({
         modal: true,
         width: 350,
@@ -814,6 +817,31 @@ $(document).ready(function() {
             }else{
                 alert('Mohon pilih produk terlebih dulu...!!?');
             }
+        }
+    });
+    $('#idpelanggan').on('change', function () {
+        if ($(this).val() == 0){
+            alamatServer = Drupal.settings.basePath;
+            alamatupdate = alamatServer + 'dataproduk/updateproduk';
+            oTable.destroy();
+            tampilkantabelproduk();
+        }else {
+            var request = new Object();
+            request.idpelanggan = $(this).val();
+            alamatpelanggan = pathutama + 'datapelanggan/getpelangganinfo';
+            $.ajax({
+                type: 'POST',
+                url: alamatpelanggan,
+                data: request,
+                cache: false,
+                success: function (data) {
+                    var PelangganInfo = eval(data);
+                    alamatServer = 'http://'+ PelangganInfo[0].url_database + '/';
+                    alamatupdate = alamatServer + 'dataproduk/updateproduk';
+                    oTable.destroy();
+                    tampilkantabelproduk();
+                }
+            });
         }
     });
 })

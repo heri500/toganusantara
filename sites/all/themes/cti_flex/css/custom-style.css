@@ -916,3 +916,6 @@ form.form-item-lined-up, .form-item-lined-up{
 .form-item-lined-up .resizable-textarea{
 	width: 100% !important;
 }
+.margin-bottom-10{
+	margin-bottom: 10px !important;
+}

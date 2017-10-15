@@ -35,7 +35,7 @@ function reproduksi(){
 	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data()">F5:SELESAI</a>';
 	$tombolprint = '<a class="buttonprint" onclick="kirim_data()">F6:SELESAI&PRINT</a>';
 	$reproduksi = '<button onclick="munculkankasir();" style="font-size:12px;border: 1px solid orangered;">Klik untuk memunculkan kasir</button>';
-	$reproduksi .= '<div id="dialogkasir" style="font-size: 12px;" title="GLOBAL POS PACKING ULANG ['.date("d-m-Y").']">';
+	$reproduksi .= '<div id="dialogkasir" style="font-size: 12px;" title="FORM PRODUKSI ['.date("d-m-Y").']">';
 	$reproduksi .= '<div id="info-kasir-waktu">';
 	$reproduksi .= '<div id="tempattanggalkasir">';
 	$reproduksi .= '<div id="tempattanggal">';
@@ -69,7 +69,7 @@ function reproduksi(){
 	$reproduksi .= $tombolselesai;
 	$reproduksi .= $tombolprint;
 	$reproduksi .= '</div>';
-	$reproduksi .= '<div id="tempattotal"><div id="totalbelanja">Total Packing Ulang : Rp. 0</div></div>';
+	$reproduksi .= '<div id="tempattotal"><div id="totalbelanja">Total Biaya Produksi : Rp. 0</div></div>';
 	$reproduksi .= '</div>';
 	$reproduksi .= '<div title="Informasi" id="dialogwarning">';
 	$reproduksi .= '<p id="pesantext">Produk yang dicari tidak ada, Silahkan masukkan Barcode/Kode Produk/Nama Produk yang lain...!!!</p>';

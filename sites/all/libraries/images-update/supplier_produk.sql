@@ -1,0 +1,1 @@
+CREATE TABLE `toganusantara`.`supplier_produk` ( `idsupplier` BIGINT NOT NULL , `idproduk` BIGINT NOT NULL ) ENGINE = MyISAM;

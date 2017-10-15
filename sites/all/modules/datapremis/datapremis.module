@@ -33,47 +33,9 @@ function datapremis_perm() {
 }
 function array_zone_gisb(){
     return array(
-        '001' => 'Utara',
-        '002' => 'Kedah',
-        '003' => 'PKBM',
-        '004' => 'Penang',
-        '005' => 'Perak',
-        '006' => 'Barat',
-        '007' => 'Pusat',
-        '008' => 'Tengah',
-        '009' => 'Utama',
-        '010' => 'Eksekutif',
-        '011' => 'Yayasan',
-        '012' => 'Negeri Sembilan',
-        '013' => 'Melaka',
-        '014' => 'Johor 1',
-        '015' => 'Johor 2',
-        '016' => 'Pahang',
-        '017' => 'Trengganu',
-        '018' => 'Kelantan',
-        '019' => 'Sabah 1/3',
-        '020' => 'Sabah 2/4',
-        '021' => 'Sarawak 1',
-        '022' => 'Sarawak 2',
-        '023' => 'Labuan',
-        '024' => 'Thailand 1',
-        '025' => 'Thailand 2',
-        '026' => 'Thailand 3',
-        '027' => 'Pendidikan Insaniah',
-        '028' => 'Pendidikan Vokasional',
-        '029' => 'Australia T',
-        '030' => 'Australia B',
-        '031' => 'Sumatera 1',
-        '032' => 'Sumatera 2',
-        '033' => 'Sumatera 3',
-        '034' => 'Jawa  1/2',
-        '035' => 'Jawa  3/4',
-        '036' => 'Makassar',
-        '037' => 'Papua',
-        '038' => 'Syam',
-        '039' => 'Afrika Utara',
-        '040' => 'Haramain',
-        '041' => 'Mesir',
+        '001' => 'PRODUKSI',
+        '002' => 'RETAIL',
+        '003' => 'ALL',
     );
 }
 function data_premis(){
@@ -112,7 +74,7 @@ function datapremis_input_form(&$form_state){
     $form['#attributes'] = array('class' => 'form-item-lined-up');
     $form['zone'] = array(
         '#type' => 'select',
-        '#title' => t('Zone Premis'),
+        '#title' => t('Type Cabang'),
         '#options' => array_zone_gisb(),
         '#description' => t('Pilih zone premis.'),
         '#default_value' => $zonePremis,
@@ -120,58 +82,58 @@ function datapremis_input_form(&$form_state){
     $form['id'] = array(
         '#title' => t('id'),
         '#type' => 'textfield',
-        '#description' => t('auto generated berdasarkan zone'),
+        '#description' => t('auto generated berdasarkan type cabang'),
         '#default_value' => $idPremis,
     );
     $form['nama'] = array(
-        '#title' => t('Nama Premis'),
+        '#title' => t('Nama Cabang'),
         '#type' => 'textfield',
-        '#description' => t('Isi nama premis'),
+        '#description' => t('Isi nama cabang'),
         '#default_value' => $namaPremis,
     );
     $form['alamat'] = array(
-        '#title' => t('Alamat Premis'),
+        '#title' => t('Alamat Cabang'),
         '#type' => 'textarea',
         '#cols' => 40,
         '#rows' => 3,
         '#default_value' => $alamatPremis,
-        '#description' => t('Input alamat premis disini.'),
+        '#description' => t('Input alamat cabang disini.'),
     );
     $form['telepon'] = array(
         '#title' => t('No. Telepon'),
         '#type' => 'textfield',
         '#default_value' => $telepon,
-        '#description' => t('Isi nomer telepon premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi nomer telepon cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['whatsapp'] = array(
         '#title' => t('No. Whatsapp'),
         '#type' => 'textfield',
         '#default_value' => $whatsapp,
-        '#description' => t('Isi nomer whatsapp premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi nomer whatsapp cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['bbm'] = array(
         '#title' => t('Pin BBM'),
         '#type' => 'textfield',
         '#default_value' => $bbm,
-        '#description' => t('Isi pin bbm premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi pin bbm cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['telegram'] = array(
         '#title' => t('No. Telegram'),
         '#type' => 'textfield',
         '#default_value' => $telegram,
-        '#description' => t('Isi nomer telegram premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi nomer telegram cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['email'] = array(
         '#title' => t('Email'),
         '#type' => 'textfield',
         '#default_value' => $email,
-        '#description' => t('Isi email premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi email cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['website'] = array(
         '#title' => t('Website'),
         '#type' => 'textfield',
         '#default_value' => $website,
-        '#description' => t('Isi website premis, pisahkan dengan ; jika lebih dari 1'),
+        '#description' => t('Isi website cabang, pisahkan dengan ; jika lebih dari 1'),
     );
     $form['submit'] = array(
         '#type' => 'submit',
@@ -317,14 +279,14 @@ function generate_premis_ajax(){
     print json_encode($jsonPremis);
     exit();
 }
-function do_upload_premisdata(){
+/*function do_upload_premisdata(){
     return 'Test';
-}
-function do_upload_premisdata_old(){
+}*/
+function do_upload_premisdata(){
     $resultview = '';
     if (is_connected()) {
         //copy premis data();
-        $url = 'http://report.ikhwanit.com/importdatapremis';
+        $url = 'http://report.toganusantara.com/importdatapremis';
         /* Process Upload Product Data */
         $totalRecord = db_result(db_query("SELECT COUNT(*) AS total_record FROM product WHERE uploaded = 0"));
         $totalUploadProcess = floor($totalRecord / 40) + 1;
@@ -346,7 +308,7 @@ function do_upload_premisdata_old(){
                     $postproduct[] = $dataProduct[$j];
                 }
             }
-            $postdata = array('premisuser' => 'ikhwanmart', 'premispssword' => '@abuya313', 'datapremis' => $dataPremis);
+            $postdata = array('premisuser' => 'togamart', 'premispssword' => '@togaMart500', 'datapremis' => $dataPremis);
             $postdata['product'] = $postproduct;
             $fields_string2 = http_build_query($postdata, '', '&');
             $ch = curl_init();
@@ -393,7 +355,7 @@ function do_upload_premisdata_old(){
                     $postpenjualan[] = $dataPenjualan[$j];
                 }
             }
-            $postdata = array('premisuser' => 'ikhwanmart', 'premispssword' => '@abuya313', 'datapremis' => $dataPremis);
+            $postdata = array('premisuser' => 'togamart', 'premispssword' => '@togaMart500', 'datapremis' => $dataPremis);
             $postdata['penjualan'] = $postpenjualan;
             $fields_string2 = http_build_query($postdata, '', '&');
             $ch = curl_init();

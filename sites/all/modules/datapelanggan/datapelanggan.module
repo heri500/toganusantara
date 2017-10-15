@@ -99,6 +99,15 @@ function datapelanggan_menu() {
 		'type' => MENU_CALLBACK,
 		'file' => 'globalpos.pelanggan.inc'
 	);
+    $items['datapelanggan/getpelangganinfo'] = array(
+        'title' => t('Get Data Pelanggan'),
+        'description' => 'Get data pelanggan',
+        'page callback' => 'get_pelanggan_info',
+        'access callback' => 'user_access',
+        'access arguments' => array('Access Data Pelanggan'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pelanggan.inc'
+    );
 	return $items;
 } // end hook menu
 

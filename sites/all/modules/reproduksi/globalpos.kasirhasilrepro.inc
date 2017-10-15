@@ -18,14 +18,19 @@ function hasilreproduksi(){
 	drupal_add_js('misc/media/datatables/js/dataTables.addtr.js');
 	drupal_add_js('misc/media/datatables/js/number.format.js');
 	drupal_add_js('misc/media/jquery.autotab-1.1b.js');
-	$tglsekarang = date("Y-m-d");
-	$tgltampil = date("d-m-Y");
-	drupal_add_js(
-		array(
-			'tglsekarang' => $tglsekarang,
-			'tgltampil' => $tgltampil,
-		),
-		'setting');
+    if (isset($_GET['tanggal'])){
+        $tglsekarang = date("Y-m-d", strtotime($_GET['tanggal']));
+        $tgltampil = date("d-m-Y", strtotime($_GET['tanggal']));
+    }else{
+        $tglsekarang = date("Y-m-d");
+        $tgltampil = date("d-m-Y");
+    }
+    drupal_add_js(
+        array(
+            'tglsekarang' => $tglsekarang,
+            'tgltampil' => $tgltampil,
+        ),
+        'setting');
 	$path = drupal_get_path('module', 'reproduksi');
 	$jspath = $path.'/js/kasirhasilrepro.js';
 	drupal_add_js($jspath);
@@ -35,7 +40,7 @@ function hasilreproduksi(){
 	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data()">F5:SELESAI</a>';
 	$tombolprint = '<a class="buttonprint" onclick="kirim_data()">F6:SELESAI&PRINT</a>';
 	$hasilreproduksi = '<button onclick="munculkankasir();" style="font-size:12px;border: 1px solid orangered;">Klik untuk memunculkan kasir</button>';
-	$hasilreproduksi .= '<div id="dialogkasir" style="font-size: 12px;" title="GLOBAL POS HASIL PACK ULANG ['.date("d-m-Y").']">';
+	$hasilreproduksi .= '<div id="dialogkasir" style="font-size: 12px;" title="GLOBAL POS HASIL PRODUKSI ['.date("d-m-Y").']">';
 	$hasilreproduksi .= '<div id="info-kasir-waktu">';
 	$hasilreproduksi .= '<div id="tempattanggalkasir">';
 	$hasilreproduksi .= '<div id="tempattanggal">';
@@ -69,7 +74,7 @@ function hasilreproduksi(){
 	$hasilreproduksi .= $tombolselesai;
 	$hasilreproduksi .= $tombolprint;
 	$hasilreproduksi .= '</div>';
-	$hasilreproduksi .= '<div id="tempattotal"><div id="totalbelanja">Total Hasil Packing Ulang : Rp. 0</div></div>';
+	$hasilreproduksi .= '<div id="tempattotal"><div id="totalbelanja">Total Hasil Produksi : Rp. 0</div></div>';
 	$hasilreproduksi .= '</div>';
 	$hasilreproduksi .= '<div title="Informasi" id="dialogwarning">';
 	$hasilreproduksi .= '<p id="pesantext">Produk yang dicari tidak ada, Silahkan masukkan Barcode/Kode Produk/Nama Produk yang lain...!!!</p>';
@@ -101,25 +106,29 @@ function simpan_hasilreproduksi(){
 		$totalmodal = 0;
 		foreach ($pecahdetail as $parameter){
 			$pecahparameter = explode("=",$parameter);
-			$pecahnilai = explode("___",remove_utf8_bom($pecahparameter[1]));
-			$IDPRODUK =	$pecahnilai[0];
-			$QTY = $pecahnilai[1];
-			$HARGAJUAL = $pecahnilai[2];
-			$DISKON = $pecahnilai[3];
-			$result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);	
-			$data = db_fetch_object($result);
-			$HARGAPOKOK = $data->hargapokok;
-			$totalmodal = $totalmodal + ($HARGAPOKOK*$QTY);
-			$STOKSEBELUM = $data->stok;
-			//idreproduksi, idproduct, jumlah, hargapokok, hargajual
-			db_query("INSERT INTO detailhasilreproduksi(idreproduksi, idproduct, jumlah, hargapokok, hargajual) VALUES
-			('%d', '%d', '%f', '%f', '%f')",
-			$next_id,$IDPRODUK,$QTY,$HARGAPOKOK,$HARGAJUAL);
-			$STOKSEKARANG = $STOKSEBELUM + $QTY;
-			db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'",$STOKSEKARANG,$IDPRODUK);
-			$KETERANGAN = 'Hasil Packing Ulang';
-			db_query("INSERT INTO transaksistock (idproduk, idreproduksi, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
-			('%d', '%d', '%f', '%f', '%f', '%s')",$IDPRODUK,$next_id,$STOKSEBELUM,$QTY,$STOKSEKARANG,$KETERANGAN);
+			$pecahnilai = explode("___",$pecahparameter[1]);
+			if (count($pecahnilai) && isset($pecahnilai[0]) && !empty($pecahnilai[0])
+                && isset($pecahnilai[1]) && !empty($pecahnilai[1])) {
+			    $IDPRODUK = $pecahnilai[0];
+                $QTY = $pecahnilai[1];
+                $HARGAJUAL = $pecahnilai[2];
+                $ExpiredDate = $pecahnilai[4];
+                $barcodeBatch = create_barcode_batch();
+                $result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'", $IDPRODUK);
+                $data = db_fetch_object($result);
+                $HARGAPOKOK = $data->hargapokok;
+                $totalmodal = $totalmodal + ($HARGAPOKOK * $QTY);
+                $STOKSEBELUM = $data->stok;
+                //idreproduksi, idproduct, jumlah, hargapokok, hargajual
+                db_query("INSERT INTO detailhasilreproduksi(idreproduksi, idproduct, jumlah, hargapokok, hargajual,expired_date,barcode_batch) VALUES
+			('%d', '%d', '%f', '%f', '%f','%s','%s')",
+                    $next_id, $IDPRODUK, $QTY, $HARGAPOKOK, $HARGAJUAL, $ExpiredDate, $barcodeBatch);
+                $STOKSEKARANG = $STOKSEBELUM + $QTY;
+                db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'", $STOKSEKARANG, $IDPRODUK);
+                $KETERANGAN = 'Hasil Packing Ulang';
+                db_query("INSERT INTO transaksistock (idproduk, idreproduksi, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
+			('%d', '%d', '%f', '%f', '%f', '%s')", $IDPRODUK, $next_id, $STOKSEBELUM, $QTY, $STOKSEKARANG, $KETERANGAN);
+            }
 		}
 		db_query("UPDATE hasilreproduksi SET totalmodal='%f' WHERE idreproduksi='%d'",$totalmodal,$next_id);
 	}else{
@@ -192,6 +201,7 @@ function view_kasir(){
 	$kasirtabel .= '<th>HARGA</th>';
 	$kasirtabel .= '<th class="diskon2">QTY</th>';
 	$kasirtabel .= '<th class="subtotal">SUBTOTAL</th>';
+    $kasirtabel .= '<th class="tanggal">EXPIRE</th>';
 	$kasirtabel .= '</tr>';
 	$kasirtabel .= '</thead>';
 	$kasirtabel .= '<tbody>';

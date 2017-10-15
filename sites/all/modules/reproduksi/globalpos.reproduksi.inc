@@ -15,136 +15,55 @@ function view_tabel_reproduksi(){
 	if ($_POST["pilihantampil"] == 'NOTA'){
 		$nota = 'selected="selected"';
 		$tabeltampil = tabel_reproduksi($tgl1,$tgl2);
-		$urutan = 2; 
+		$urutan = 2;
+		$tampilData = 0;
 	}elseif ($_POST["pilihantampil"] == 'PRODUK'){
 		$produk = 'selected="selected"';
-		$tabeltampil = reproduksi_produk($tgl1,$tgl2);
+		$tabeltampil = reproduksi_produk();
 		$urutan = 3;
+        $tampilData = 1;
 	}else{
 		$tabeltampil = tabel_reproduksi($tgl1,$tgl2);
 		$nota = 'selected="selected"';
 		$urutan = 2;
+        $tampilData = 0;
 	}
-	drupal_add_css('misc/media/datatables/css/demo_table_jui.css');
-	drupal_add_css('misc/media/datatables/css/TableTools.css');
-	drupal_add_css('misc/media/datatables/themes/smoothness/jquery-ui-1.8.4.custom.css');
-	drupal_add_css('misc/media/datatables/css/ColVis.css');
-	drupal_add_js('misc/media/jquery-1.4.4.min.js');
-	drupal_add_js('misc/media/jquery-ui-1.8.custom.min.js');
-	drupal_add_js('misc/media/datatables/js/jquery.dataTables.min.js');
-	drupal_add_js('misc/media/datatables/js/ColVis.min.js');
-	drupal_add_js('misc/media/datatables/ZeroClipboard/ZeroClipboard.js');
-	drupal_add_js('misc/media/datatables/js/TableTools.min.js');
-	drupal_add_js('
-		var oTable;
-		var oTable2;
-		var oTable3;
-		var pathutama = "'.base_path().'";
-		var urutan = "'.$urutan.'";
-		function tampiltabeljual(){
-			oTable = $("#tabel_reproduksi").dataTable( {
-				"bJQueryUI": true,
-				"bAutoWidth": false,
-				"sPaginationType": "full_numbers",
-				"bInfo": false,
-				"aLengthMenu": [[100, 200, 300, -1], [100, 200, 300, "All"]],
-				"iDisplayLength": 100,
-				"aaSorting": [[urutan, "desc"]],
-				"sDom": \'<"space"T><C><"clear"><"H"lfr>t<"F"ip>\',
-					"oColVis": {
-						"activate": "mouseover"
-					}
-			});
-		}
-		function tampiltabeldetailrepro(){
-			oTable2 = $("#tabel_detail_reproduksi").dataTable( {
-				"bJQueryUI": true,
-				"bAutoWidth": false,
-				"bPaginate": false,
-				"bLengthChange": false,
-				"bInfo": false,
-				"aaSorting": [[0, "asc"]],
-				"sDom": \'<"H"<"toolbar">fr>t<"F"ip>\'
-			});
-		}
-		function tampiltabeldetailhasilrepro(){
-			oTable3 = $("#tabel_detail_hasilreproduksi").dataTable( {
-				"bJQueryUI": true,
-				"bAutoWidth": false,
-				"bPaginate": false,
-				"bLengthChange": false,
-				"bInfo": false,
-				"aaSorting": [[0, "asc"]],
-				"sDom": \'<"H"<"toolbar">fr>t<"F"ip>\'
-			});
-		}
-		function view_detail(idreproduksi,nonota){
-			var request = new Object();
-			request.idreproduksi = idreproduksi;
-			alamat = pathutama + "reproduksi/detailreproduksi";
-			$.ajax({ 
-				type: "POST",
-				url: alamat,
-				data: request, 
-				cache: false, 
-				success: function(data){
-					$("#divdetailrepro").html(data);
-					tampiltabeldetailrepro();
-					$("div.toolbar").html("No. Nota : "+ nonota);
-					var request2 = new Object();
-					request2.idreproduksi = idreproduksi;
-					alamat = pathutama + "hasilreproduksi/detailhasilreproduksi";
-					$.ajax({ 
-						type: "POST",
-						url: alamat,
-						data: request, 
-						cache: false, 
-						success: function(data){
-							$("#divdetailhasilrepro").html(data);
-							tampiltabeldetailhasilrepro();
-							$("#dialogdetail").dialog("open");
-						}
-					});
-				}
-			});
-		}
-		function add_hasil_pack(idreproduksi, nonota){
-			if (idreproduksi > 0){
-				window.location = pathutama + "hasilreproduksi/kasir?idreproduksi="+ idreproduksi +"&nonota="+ nonota;
-			}
-		}
-		$(document).ready(function(){
-			$("#dialogdetail").dialog({
-				modal: true,
-				width: 850,
-				resizable: false,
-				autoOpen: false,
-				position: ["auto","auto"]
-			});
-			$("button").button();
-			TableToolsInit.sSwfPath = pathutama +"misc/media/datatables/swf/ZeroClipboard.swf";
-			tampiltabeljual();
-			$("#tgl1").datepicker({
-				changeMonth: true,
-				changeYear: true,
-				dateFormat: "yy-mm-dd"
-			});
-			$("#tgl2").datepicker({
-				changeMonth: true,
-				changeYear: true,
-				dateFormat: "yy-mm-dd"
-			});
-		})
-	','inline');
-	
+    drupal_add_css('misc/media/datatables.1.10/jquery/jquery-ui.css');
+    drupal_add_css('misc/media/datatables.1.10/media/css/dataTables.jqueryui.css');
+    drupal_add_css('misc/media/datatables.1.10/extensions/Buttons/css/buttons.dataTables.css');
+    drupal_add_css('misc/media/datatables.1.10/extensions/Buttons/css/buttons.jqueryui.css');
+    drupal_add_js('misc/media/datatables.1.10/media/js/jquery.js');
+    drupal_add_js('misc/media/jqueryValidate/js/jquery.validationEngine-en.js');
+    drupal_add_js('misc/media/jqueryValidate/js/jquery.validationEngine.js');
+    drupal_add_js('misc/media/datatables.1.10/jquery/jquery-ui.js');
+    _addJeditablePlugins();
+    _addAutotabPlugins();
+    drupal_add_js('misc/media/datatables.1.10/media/js/jquery.dataTables.js');
+    drupal_add_js('misc/media/datatables.1.10/media/js/dataTables.jqueryui.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/dataTables.buttons.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.flash.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.html5.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.print.js');
+    drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.colVis.min.js');
+    drupal_add_js(
+        array(
+            'urutan' => $urutan,
+            'tampilData' => $tampilData,
+            'tglAwal' => $tgl1,
+            'tglAkhir' => $tgl2,
+        ),
+        'setting');
+    $js_path = drupal_get_path('module','reproduksi').'/js/tabelproduksi.js';
+    drupal_add_js($js_path);
 	$pilihantampil = '<select id="pilihantampil" name="pilihantampil">';
 	$pilihantampil .= '<option '.$nota.'>NOTA</option>';
 	$pilihantampil .= '<option '.$produk.'>PRODUK</option>';
 	$pilihantampil .= '</select>';
-	$pilihperiode = '<form action="'.base_path().'reproduksi/viewreproduksi" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PACK ULANG </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
-	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'<button>LIHAT PACK ULANG</button></div></form>';
+	$pilihperiode = '<form action="'.base_path().'reproduksi/viewreproduksi" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PRODUKSI </label>';
+    $pilihperiode .= '<input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
+	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'<button>LIHAT PRODUKSI</button></div></form>';
 	$viewreproduksi = $pilihperiode.'<div id="viewreproduksi">'.$tabeltampil.'</div>';
-	$viewreproduksi .= '<div id="dialogdetail" title="DETAIL PACK ULANG"><div id="divdetailrepro"></div><div id="divdetailhasilrepro"></div></div>';
+	$viewreproduksi .= '<div id="dialogdetail" title="DETAIL PRODUKSI"><div id="divdetailrepro"></div><div id="divdetailhasilrepro"></div></div>';
 	return $viewreproduksi;
 }
 
@@ -171,61 +90,16 @@ function tabel_reproduksi($tgl1,$tgl2){
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</thead>';
 	$tabelreproduksi .= '<tbody>';
-	$result = db_query("SELECT idreproduksi, name, nonota, SUBSTR(tglreproduksi,1,10) AS
-	tanggal,SUBSTR(tglreproduksi,11,9) AS waktu, idpemakai, total, totalmodal,
-	(total-totalmodal) AS laba, c.nama FROM reproduksi a 
-	LEFT JOIN cms_users b ON a.idpemakai = b.uid
-	LEFT JOIN {datapekerja} c ON a.idpekerja = c.id
-	WHERE  SUBSTR(tglreproduksi,1,10) BETWEEN '%s' AND '%s' ORDER BY idreproduksi",
-	$tgl1,$tgl2);
-	$totaljual = 0;
-	$totalmodal = 0;
-	$totallaba = 0;
-	$totaljualhasil = 0;
-	$totalmodalhasil = 0;
-	$totallabahasil = 0;
-	while($data = db_fetch_object($result)){
-		$hasilrepro = hitung_total_hasil($data->idreproduksi, 'total');
-		$modalrepro = hitung_total_hasil($data->idreproduksi, 'totalmodal');
-		$labarepro = $hasilrepro - $modalrepro;
-		$tabelreproduksi .= '<tr>';
-		$tomboldetail = '<img title="Klik untuk melihat detail packing ulang" onclick="view_detail(\''.$data->idreproduksi.'\',\''.$data->nonota.'\');" src="'.base_path().'misc/media/images/forward_enabled.ico">';
-		if ($hasilrepro > 0){
-			$tombolhasil = '<img title="Hasil packing ulang sudah diisi" src="'.base_path().'misc/media/images/del.ico" width="24">';
-		}else{
-			$tombolhasil = '<img title="Klik untuk mengisi hasil packing ulang" onclick="add_hasil_pack(\''.$data->idreproduksi.'\',\''.$data->nonota.'\');" src="'.base_path().'misc/media/images/add-small.ico">';	
-		}
-		$tabelreproduksi .= '<td class="center">'.$tomboldetail.'</td>';
-		$tabelreproduksi .= '<td class="center">'.$tombolhasil.'</td>';
-		$tabelreproduksi .= '<td class="center">'.$data->nonota.'</td>';
-		$tabelreproduksi .= '<td class="center">'.$data->tanggal.'</td>';
-		$tabelreproduksi .= '<td class="center">'.$data->waktu.'</td>';
-		$totaljualhasil = $totaljualhasil + $hasilrepro;
-		$totalmodalhasil = $totalmodalhasil + $modalrepro;
-		$totallabahasil = $totallabahasil + $labarepro;
-		$tabelreproduksi .= '<td class="angka">'.number_format($data->total,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="angka">'.number_format($data->totalmodal,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="angka">'.number_format($data->laba,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="angka">'.number_format($hasilrepro,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="angka">'.number_format($modalrepro,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="angka">'.number_format($labarepro,0,",",".").'</td>';
-		$tabelreproduksi .= '<td class="center">'.$data->name.'</td>';
-		$tabelreproduksi .= '<td class="center">'.$data->nama.'</td>';
-		$tabelreproduksi .= '</tr>';
-		$totaljual = $totaljual + $data->total;
-		$totalmodal = $totalmodal + $data->totalmodal;
-		$totallaba = $totallaba + $data->laba;
-	}
 	$tabelreproduksi .= '</tbody>';
 	$tabelreproduksi .= '<tfoot>';
 	$tabelreproduksi .= '<tr>';
 	$tabelreproduksi .= '<th style="text-align:right" colspan="5">Total:&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totaljual,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totalmodal,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totallaba,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totaljualhasil,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totalmodalhasil,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totallabahasil,0,",",".").'&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
 	$tabelreproduksi .= '<th>&nbsp;</th>';
 	$tabelreproduksi .= '<th>&nbsp;</th>';
 	$tabelreproduksi .= '</tr>';
@@ -316,9 +190,9 @@ function detail_hasilreproduksi(){
 	}
 	exit();	
 }
-function reproduksi_produk($tgl1,$tgl2){
-	$tgl2 = DateAdd(1,$tgl2,"Y-m-d");
-	$tabelreproduksi ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_reproduksi">';
+function reproduksi_produk(){
+    $tabelreproduksi ='<h4>BAHAN PRODUKSI</h4>';
+	$tabelreproduksi .='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_reproduksi">';
 	$tabelreproduksi .= '<thead>';
 	$tabelreproduksi .= '<tr>';
 	$tabelreproduksi .= '<th>BARCODE</th>';
@@ -333,41 +207,42 @@ function reproduksi_produk($tgl1,$tgl2){
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</thead>';
 	$tabelreproduksi .= '<tbody>';
-	$result = db_query("SELECT d.namasupplier, a.tglreproduksi, c.barcode, c.namaproduct, SUM(b.jumlah) AS totalqty, c.hargajual, c.hargapokok, SUM(b.hargajual*b.jumlah) AS subtotal, 
-	SUM(b.hargapokok*b.jumlah) AS totalmodal, SUM((b.hargajual-b.hargapokok)*b.jumlah) AS laba FROM 
-	detailreproduksi b LEFT JOIN reproduksi a ON a.idreproduksi=b.idreproduksi
-	LEFT JOIN product c ON b.idproduct=c.idproduct
-	LEFT JOIN supplier d ON c.idsupplier=d.idsupplier WHERE
-	a.tglreproduksi BETWEEN '%s' AND '%s' GROUP BY b.idproduct",$tgl1,$tgl2);
-	$totaljual = 0;
-	$totalmodal = 0;
-	$totallaba = 0;
-	while($data = db_fetch_object($result)){
-		$tabelreproduksi .= '<tr>';
-		$tabelreproduksi .= '<td>'.$data->barcode.'</td>';
-		$tabelreproduksi .= '<td>'.$data->namaproduct.'</td>';
-		$tabelreproduksi .= '<td>'.$data->namasupplier.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->totalqty.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->hargajual.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->hargapokok.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->subtotal.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->totalmodal.'</td>';
-		$tabelreproduksi .= '<td class="angka">'.$data->laba.'</td>';
-		$tabelreproduksi .= '</tr>';
-		$totaljual = $totaljual + $data->subtotal;
-		$totalmodal = $totalmodal + $data->totalmodal;
-		$totallaba = $totallaba + $data->laba;
-	}
 	$tabelreproduksi .= '</tbody>';
 	$tabelreproduksi .= '<tfoot>';
 	$tabelreproduksi .= '<tr>';
 	$tabelreproduksi .= '<th style="text-align:right" colspan="6">Total:&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totaljual,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totalmodal,0,",",".").'&nbsp;&nbsp;</th>';
-	$tabelreproduksi .= '<th style="text-align: right">Rp. '.number_format($totallaba,0,",",".").'&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</tfoot>';
 	$tabelreproduksi .= '</table>';
+    $tabelreproduksi .='<h4>HASIL PRODUKSI</h4>';
+    $tabelreproduksi .='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_hasil_produksi">';
+    $tabelreproduksi .= '<thead>';
+    $tabelreproduksi .= '<tr>';
+    $tabelreproduksi .= '<th>BARCODE</th>';
+    $tabelreproduksi .= '<th>PRODUK</th>';
+    $tabelreproduksi .= '<th>SUPPLIER</th>';
+    $tabelreproduksi .= '<th class="qty">QTY</th>';
+    $tabelreproduksi .= '<th>H.JUAL</th>';
+    $tabelreproduksi .= '<th>H.MODAL</th>';
+    $tabelreproduksi .= '<th>SUBTOTAL</th>';
+    $tabelreproduksi .= '<th>MODAL</th>';
+    $tabelreproduksi .= '<th>LABA</th>';
+    $tabelreproduksi .= '</tr>';
+    $tabelreproduksi .= '</thead>';
+    $tabelreproduksi .= '<tbody>';
+    $tabelreproduksi .= '</tbody>';
+    $tabelreproduksi .= '<tfoot>';
+    $tabelreproduksi .= '<tr>';
+    $tabelreproduksi .= '<th style="text-align:right" colspan="6">Total:&nbsp;&nbsp;</th>';
+    $tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+    $tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+    $tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
+    $tabelreproduksi .= '</tr>';
+    $tabelreproduksi .= '</tfoot>';
+    $tabelreproduksi .= '</table>';
 	return $tabelreproduksi;	
 }
 

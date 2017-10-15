@@ -129,7 +129,7 @@ function data_produk(){
 	$pilihanstatus .= '<img onclick="view_status(\'all\')" title="Klik untuk melihat seluruh produk" src="'.base_path().'misc/media/images/alldata.png">';
 	$pilihanstatus .= '<img onclick="view_status(\'nonaktif\')" title="Klik untuk melihat seluruh produk non aktif" src="'.base_path().'misc/media/images/nonaktifdata.png">';
 	$pilihanstatus .= '<span class="float-right">';
-	$pilihanstatus .= '<button id="export-xls" onclick="export_to_xls();"><img height="20" src="'.base_path().$modelePath.'/icon/export-xls.png"></button>';//'<button id="export-xls" onclick="export_to_xls();">Export XLS</button>&nbsp;&nbsp;';
+	$pilihanstatus .= '<button id="export-xls" onclick="export_to_xls();"><img height="20" src="'.base_path().$modelePath.'/icon/export-xls.png">XLS</button>&nbsp;&nbsp;';//'<button id="export-xls" onclick="export_to_xls();">Export XLS</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="nonaktifkan">Non Aktifkan</button>&nbsp;&nbsp;';
 	$pilihanstatus .= '<button id="aktifkan">Aktifkan</button>&nbsp;&nbsp;';
 	//$pilihanstatus .= '<button id="print-barcode-biasa">Print Barcode</button>&nbsp;&nbsp;';
@@ -155,6 +155,11 @@ function data_produk(){
 			'setting'
 		);
 	}
+	if ($_SERVER[HTTP_HOST] == 'toganusantara.dev' || $_SERVER[HTTP_HOST] == 'pusat.toganusantara.com') {
+        $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection(null, 'PILIH SERVER', false).'</div>';
+    }else{
+        $pilihanPelanggan = '';
+    }
 	if (isset($_GET["statusstok"])){
 		$statusStok = $_GET["statusstok"];
 		drupal_add_js(
@@ -163,7 +168,7 @@ function data_produk(){
 			),
 			'setting'
 		);
-		$viewtabelproduk .= $pilihanstatus.'<div id="tempattabel" style="width: 100%;">'.tabel_produk($statusStok, $statusProduct).'</div>';
+		$viewtabelproduk .= $pilihanstatus.$pilihanPelanggan.'<div id="tempattabel" style="width: 100%;">'.tabel_produk($statusStok, $statusProduct).'</div>';
 	}else{
 		drupal_add_js(
 			array(
@@ -171,7 +176,7 @@ function data_produk(){
 			),
 			'setting'
 		);
-		$viewtabelproduk .= $pilihanstatus.'<div id="tempattabel" style="width: 100%;">'.tabel_produk(null, $statusProduct).'</div>';
+		$viewtabelproduk .= $pilihanstatus.$pilihanPelanggan.'<div id="tempattabel" style="width: 100%;">'.tabel_produk(null, $statusProduct).'</div>';
 	}
 	$viewtabelproduk .= '<div id="dialogtambahkategori" title="TAMBAH KATEGORI PRODUK">';
 	$viewtabelproduk .= '<form id="tambahkategoriform"><div><label>KODE</label><input type="text" class="validate[required]" id="kodekategori" name="kodekategori"></div>';
