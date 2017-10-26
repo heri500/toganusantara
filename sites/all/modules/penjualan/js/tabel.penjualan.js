@@ -10,6 +10,7 @@ var selectedPenjualan = 0;
 var selectedNota = '';
 var selectedPelanggan = 0;
 var alamatupdatepenjualan = '';
+var alamatServer = '';
 function addCommas(nStr){
 	nStr += "";
 	x = nStr.split(",");
@@ -33,7 +34,7 @@ function tampiltabeljual(){
 			'aaSorting': [[urutan, 'desc']],
 			'processing': true,
 			'serverSide': true,
-			'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idpelanggan='+ Drupal.settings.filterId,
+			'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idpelanggan='+ Drupal.settings.filterId,
 			buttons: [
 				{
 					extend: 'colvis',
@@ -132,7 +133,7 @@ function tampiltabeljual(){
 			'aaSorting': [[urutan, 'desc']],
 			'processing': true,
 			'serverSide': true,
-			'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan2&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
+			'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan2&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
 			buttons: [
 				{
 					extend: 'colvis'
@@ -211,7 +212,7 @@ function tampiltabeljualdetail(){
 		],
 		'processing': true,
 		'serverSide': true,
-		'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?asal=penjualan&request_data=detailpenjualan&idpenjualan=' + selectedPenjualan,
+		'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?asal=penjualan&request_data=detailpenjualan&idpenjualan=' + selectedPenjualan,
 		'createdRow': function ( row, data, index ) {
 			row.id = data[(data.length - 1)];
 			$('td', row).eq(1).addClass('center');
@@ -227,11 +228,57 @@ function tampiltabeljualdetail(){
 					oTable2.fnDraw();
 				}
 			});
-			$('td', row).eq(4).addClass('angka');
-			$('td', row).eq(5).addClass('angka');
-			$('td', row).eq(6).addClass('angka');
-			$('td', row).eq(7).addClass('angka');
+			$('td', row).eq(4).addClass('angka').attr('id','hargajual-'+ data[(data.length - 1)]).editable(alamatupdatepenjualan,{
+                name : 'hargajual',
+                width : 100,
+                height : 18,
+                select: true,
+                style   : 'margin: 0',
+                tooltip   : 'Klik untuk mengubah harga jual barang',
+                indicator : 'Saving...',
+                callback : function(value, settings) {
+                    oTable2.fnDraw();
+                }
+            });
+			$('td', row).eq(5).addClass('angka').attr('id','diskon-'+ data[(data.length - 1)]).editable(alamatupdatepenjualan,{
+                name : 'diskon',
+                width : 100,
+                height : 18,
+                select: true,
+                style   : 'margin: 0',
+                tooltip   : 'Klik untuk mengubah diskon barang',
+                indicator : 'Saving...',
+                callback : function(value, settings) {
+                    oTable2.fnDraw();
+                }
+            });
+			$('td', row).eq(6).addClass('angka').attr('id','ppn-'+ data[(data.length - 1)]).editable(alamatupdatepenjualan,{
+                name : 'ppn',
+                width : 60,
+                height : 18,
+                select: true,
+                style   : 'margin: 0',
+                tooltip   : 'Klik untuk mengubah ppn barang',
+                indicator : 'Saving...',
+                callback : function(value, settings) {
+                    oTable2.fnDraw();
+                }
+            });
+			$('td', row).eq(7).addClass('angka').attr('id','hargapokok-'+ data[(data.length - 1)]).editable(alamatupdatepenjualan,{
+                name : 'hargapokok',
+                width : 100,
+                height : 18,
+                select: true,
+                style   : 'margin: 0',
+                tooltip   : 'Klik untuk mengubah harga modal barang',
+                indicator : 'Saving...',
+                callback : function(value, settings) {
+                    oTable2.fnDraw();
+                }
+            });
 			$('td', row).eq(8).addClass('angka');
+            $('td', row).eq(9).addClass('angka');
+            $('td', row).eq(10).addClass('angka');
 		},
 		'footerCallback': function ( row, data, start, end, display ) {
 			var api = this.api(), data;
@@ -244,26 +291,6 @@ function tampiltabeljualdetail(){
 			};
 			// Total over all pages
 			total = api
-				.column( 6 )
-				.data()
-				.reduce( function (a, b) {
-					return intVal(a) + intVal(b);
-				}, 0 );
-			// Update footer
-			$( api.column( 6 ).footer() ).html(
-				'Rp. '+ addCommas(total)
-			).addClass('angka');
-			total = api
-				.column( 7 )
-				.data()
-				.reduce( function (a, b) {
-					return intVal(a) + intVal(b);
-				}, 0 );
-			// Update footer
-			$( api.column( 7 ).footer() ).html(
-				'Rp. '+ addCommas(total)
-			).addClass('angka');
-			total = api
 				.column( 8 )
 				.data()
 				.reduce( function (a, b) {
@@ -271,6 +298,26 @@ function tampiltabeljualdetail(){
 				}, 0 );
 			// Update footer
 			$( api.column( 8 ).footer() ).html(
+				'Rp. '+ addCommas(total)
+			).addClass('angka');
+			total = api
+				.column( 9 )
+				.data()
+				.reduce( function (a, b) {
+					return intVal(a) + intVal(b);
+				}, 0 );
+			// Update footer
+			$( api.column( 9 ).footer() ).html(
+				'Rp. '+ addCommas(total)
+			).addClass('angka');
+			total = api
+				.column( 10 )
+				.data()
+				.reduce( function (a, b) {
+					return intVal(a) + intVal(b);
+				}, 0 );
+			// Update footer
+			$( api.column( 10 ).footer() ).html(
 				'Rp. '+ addCommas(total)
 			).addClass('angka');
 		},
@@ -282,7 +329,7 @@ function view_detail(idpenjualan,nonota,idpelanggan){
 	selectedPelanggan = idpelanggan;
 	var request = new Object();
 	request.idpenjualan = idpenjualan;
-	alamat = pathutama + 'penjualan/detailpenjualan';
+	alamat = alamatServer + 'penjualan/detailpenjualan';
 	$.ajax({
 		type: 'POST',
 		url: alamat,
@@ -339,11 +386,12 @@ function print_faktur(idpenjualan,nonota){
 }
 $(document).ready(function(){
     pathutama = Drupal.settings.basePath;
-	alamatupdatepenjualan = pathutama + 'penjualan/updatedetailpenjualan';
 	urutan = Drupal.settings.urutan;
 	tampilData = Drupal.settings.tampilData;
     tglAwal = Drupal.settings.tglAwal;
     tglAkhir = Drupal.settings.tglAkhir;
+    alamatServer = Drupal.settings.server;
+    alamatupdatepenjualan = alamatServer + 'penjualan/updatedetailpenjualan';
 	$('#dialogdetail').dialog({
 		modal: true,
 		width: 900,
@@ -471,4 +519,31 @@ $(document).ready(function(){
 	$('#print-slip').on('click', function(){
 		print_penjualan(selectedPenjualan,selectedNota);
 	});
+    $('#idserver').on('change', function () {
+        if ($(this).val() == 0){
+            alamatServer = Drupal.settings.basePath;
+            alamatupdate = alamatServer + 'dataproduk/updateproduk';
+            oTable.fnDestroy();
+            tampiltabeljual();
+            //$(':button').prop('disabled', false);
+        }else {
+            //$(':button').prop('disabled', true);
+            var request = new Object();
+            request.idpelanggan = $(this).val();
+            alamatpelanggan = pathutama + 'datapelanggan/getpelangganinfo';
+            $.ajax({
+                type: 'POST',
+                url: alamatpelanggan,
+                data: request,
+                cache: false,
+                success: function (data) {
+                    var PelangganInfo = eval(data);
+                    alamatServer = 'http://'+ PelangganInfo[0].url_database + '/';
+                    alamatupdate = alamatServer + 'dataproduk/updateproduk';
+                    oTable.fnDestroy();
+                    tampiltabeljual();
+                }
+            });
+        }
+    });
 })

@@ -145,11 +145,11 @@ function syncHutangPelanggan($idPelanggan = null){
 	}
 	return $totalSync;
 }
-function createPelangganSelection($defaultValue = null, $emptyText = 'UMUM', $inisialUlang = true){
+function createPelangganSelection($defaultValue = null, $emptyText = 'UMUM', $inisialUlang = true, $IdSelection = 'idpelanggan'){
 	if ($inisialUlang){
-		$pilihpelanggan = '<select id="idpelanggan" name="idpelanggan" onchange="inisialulang();">';
+		$pilihpelanggan = '<select id="'.$IdSelection.'" name="'.$IdSelection.'" onchange="inisialulang();">';
 	}else{
-		$pilihpelanggan = '<select id="idpelanggan" name="idpelanggan">';
+		$pilihpelanggan = '<select id="'.$IdSelection.'" name="'.$IdSelection.'">';
 	}
 	if (empty($defaultValue)){
 		$pilihpelanggan .= '<option selected value="0">'.$emptyText.'</option>';
@@ -233,4 +233,23 @@ function sync_penggunaan_deposit($idPelanggan = null, $periode = null){
 			penggunaandeposit($variables);
         }
     }
+}
+
+function get_pelanggan_data($IdPelanggan = null){
+    $data = null;
+    if (!empty($IdPelanggan)){
+        $StrSQL = "SELECT idpelanggan, kodepelanggan, namapelanggan, telp, alamat, email, url_database, username, ";
+        $StrSQL .= "password FROM pelanggan WHERE idpelanggan='%d'";
+        $result = db_query($StrSQL,$IdPelanggan);
+        $data = db_fetch_object($result);
+    }
+    return $data;
+}
+
+function update_diskon_kategori($IdDiskon = null, $BesarDiskon = null){
+    if (!empty($IdDiskon) && !is_null($BesarDiskon)){
+        $StrSql = "UPDATE diskonkategori SET besardiskon='%f' WHERE id=%d";
+        db_query($StrSql, $BesarDiskon, $IdDiskon);
+    }
+    return $BesarDiskon;
 }

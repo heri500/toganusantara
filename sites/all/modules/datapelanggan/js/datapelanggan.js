@@ -251,17 +251,19 @@ function tampiltabelpembayaran(){
         'sDom': '<"H"<"toolbar2">fr>t<"F"ip>'
 });
 }
-function tampiltabeldiskon(){
-    oTable5 = $('#tabel_diskon').dataTable( {
+function tampiltabeldiskon() {
+    oTable5 = $('#tabel_diskon').dataTable({
         'bJQueryUI': true,
         'bAutoWidth': false,
         'bPaginate': false,
         'bLengthChange': false,
-        'bInfo': false,
-        'bFilter': false,
-        'aaSorting': [[0, 'asc']],
+        'bInfo': true,
+        'bFilter': true,
+        'bSort': false,
+        'scrollY': '220px',
+        'scrollCollapse': true,
         'sDom': '<"H"<"toolbar3">fr>t<"F"ip>'
-});
+    });
 }
 function view_detail(idpenjualan,nonota){
     selectedPenjualan = idpenjualan;
@@ -321,7 +323,6 @@ function tabeldiskon(idpelanggan,namapelanggan){
         success: function(data){
             $('#idpelanggan').val(idpelanggan);
             $('#tabeldiskon').html(data);
-            tampiltabeldiskon();
             $('div.toolbar3').html('PELANGGAN : '+ namapelanggan);
             $('#diskonpelanggan').dialog('open');
             $('#namapelanggandiskon').val(namapelanggan);
@@ -333,6 +334,9 @@ function tambahdiskon(){
         var request = new Object();
         request.idpelanggan = $('#idpelanggan').val();
         request.idkategori = $('#idkategori').val();
+        if ($('#idproduct').val()){
+            request.idproduct = $('#idproduct').val();
+        }
         request.diskon = $('#diskon').val();
         alamat = pathutama + 'datapelanggan/simpandiskon';
         $.ajax({
@@ -353,7 +357,17 @@ function tambahdiskon(){
                     success: function(data){
                         $('#tabeldiskon').html(data);
                         tampiltabeldiskon();
+                        $('.besar-diskon').editable('destroy');
+                        $('.besar-diskon').editable(AlamatUpdateDiskon, {
+                            'width': '60px',
+                            'height': '20px',
+                            'submit': 'Ok',
+                            'indicator': 'Menyimpan...',
+                            'tooltip': 'Klik untuk mengubah...',
+                            'select': true
+                        });
                         $('div.toolbar3').html('PELANGGAN : '+ $('#namapelanggandiskon').val());
+                        $('#hapus_pilihan').button();
                         $('#diskon').select();
                     }
                 });
@@ -361,12 +375,11 @@ function tambahdiskon(){
         });
     }
 }
-function hapus_diskon(idpelanggan, idkategori, namapelanggan){
+function hapus_diskon(idpelanggan, iddiskon, namapelanggan){
     var tanya = confirm('Apakah diskon ini benar-benar ingin dihapus..??');
     if (tanya != 0){
         var request = new Object();
-        request.idpelanggan = idpelanggan;
-        request.idkategori = idkategori;
+        request.id = iddiskon;
         alamat = pathutama + 'datapelanggan/hapusdiskon';
         $.ajax({
             type: 'POST',
@@ -375,19 +388,105 @@ function hapus_diskon(idpelanggan, idkategori, namapelanggan){
             cache: false,
             success: function(data){
                 var request2 = new Object();
-                request2.idpelanggan = $('#idpelanggan').val();
+                request2.idpelanggan = idpelanggan;
                 request2.namapelanggan = namapelanggan;
                 alamat = pathutama + 'datapelanggan/tabeldiskon';
+                $.ajax({
+                    type: 'POST',
+                    url: alamat,
+                    data: request2,
+                    cache: false,
+                    success: function(data){
+                        $('#tabeldiskon').html(data);
+                        tampiltabeldiskon();
+                        $('.besar-diskon').editable('destroy');
+                        $('.besar-diskon').editable(AlamatUpdateDiskon, {
+                            'width': '60px',
+                            'height': '20px',
+                            'submit': 'Ok',
+                            'indicator': 'Menyimpan...',
+                            'tooltip': 'Klik untuk mengubah...',
+                            'select': true
+                        });
+                        $('div.toolbar3').html('PELANGGAN : '+ namapelanggan);
+                        $('#hapus_pilihan').button();
+                        get_product();
+                        $('#diskon').select();
+                    }
+                });
+            }
+        });
+    }
+}
+function get_product(){
+    var AlamatProduk = pathutama + 'dataproduk/getproductbykategori';
+    var request = new Object();
+    request.idkategori = $('#idkategori').val();
+    $.ajax({
+        type: 'POST',
+        url: AlamatProduk,
+        data: request,
+        cache: false,
+        success: function(data){
+            var RetData = eval(data);
+            if (RetData.length > 0){
+                $('#idproduct').chosen('destroy');
+                $('#idproduct').empty();
+                for (var i = 0;i < RetData.length;i++){
+                    var OptProduct = '<option value="'+ RetData[i].idproduct +'">'+ RetData[i].namaproduct +'</option>';
+                    $('#idproduct').append(OptProduct);
+                }
+                $('#idproduct').chosen({width: "400px"});
+            }else{
+                $('#idproduct').chosen('destroy');
+                $('#idproduct').empty();
+                $('#idproduct').chosen({width: "400px"});
+            }
+        }
+    });
+}
+function hapus_pilihan_diskon(idpelanggan, namapelanggan){
+    var tanya = confirm('Apakah diskon yang di centang benar-benar ingin dihapus..??');
+    if (tanya) {
+        var SelectedDiskon = new Array;
+        $('.selected-diskon').each(function () {
+            if ($(this).is(':checked')) {
+                SelectedDiskon.push($(this).val());
+                var request = new Object();
+                request.id = SelectedDiskon;
+                alamat = pathutama + 'datapelanggan/hapusdiskon';
                 $.ajax({
                     type: 'POST',
                     url: alamat,
                     data: request,
                     cache: false,
                     success: function(data){
-                        $('#tabeldiskon').html(data);
-                        tampiltabeldiskon();
-                        $('div.toolbar3').html('PELANGGAN : '+ namapelanggan);
-                        $('#diskon').select();
+                        var request2 = new Object();
+                        request2.idpelanggan = idpelanggan;
+                        request2.namapelanggan = namapelanggan;
+                        alamat = pathutama + 'datapelanggan/tabeldiskon';
+                        $.ajax({
+                            type: 'POST',
+                            url: alamat,
+                            data: request2,
+                            cache: false,
+                            success: function(data){
+                                $('#tabeldiskon').html(data);
+                                tampiltabeldiskon();
+                                $('.besar-diskon').editable('destroy');
+                                $('.besar-diskon').editable(AlamatUpdateDiskon, {
+                                    'width': '60px',
+                                    'height': '20px',
+                                    'submit': 'Ok',
+                                    'indicator': 'Menyimpan...',
+                                    'tooltip': 'Klik untuk mengubah...',
+                                    'select': true
+                                });
+                                $('div.toolbar3').html('PELANGGAN : '+ namapelanggan);
+                                $('#hapus_pilihan').button();
+                                $('#diskon').select();
+                            }
+                        });
                     }
                 });
             }
@@ -398,6 +497,7 @@ $(document).ready(function() {
     pathutama = Drupal.settings.basePath;
     pathfile = pathutama + Drupal.settings.filepath;
     alamatupdate = pathutama + 'datapelanggan/updatepelanggan';
+    AlamatUpdateDiskon = pathutama + 'datapelanggan/updatediskon';
     $('#tabel_pelanggan tbody .editable').editable(alamatupdate, {
         'callback': function( sValue, y ) {
             var aPos = oTable.fnGetPosition( this );
@@ -448,13 +548,30 @@ $(document).ready(function() {
     });
     $('#diskonpelanggan').dialog({
         modal: true,
-        width: 650,
+        title : 'DISKON PELANGGAN',
+        width: 750,
         resizable: false,
         autoOpen: false,
         position: ['auto','auto'],
         open: function(event, ui) {
             $('#diskon').focus();
             $('#diskon').select();
+            $('#idkategori').chosen('destroy');
+            $('#idkategori').chosen({width: "250px"});
+            $('#idproduct').chosen('destroy');
+            $('#idproduct').chosen({width: "400px"});
+            $('#diskonpelanggan div.baris input[type="text"]').css('width','242px');
+            tampiltabeldiskon();
+            $('.besar-diskon').editable('destroy');
+            $('.besar-diskon').editable(AlamatUpdateDiskon, {
+                'width': '60px',
+                'height': '20px',
+                'submit': 'Ok',
+                'indicator': 'Menyimpan...',
+                'tooltip': 'Klik untuk mengubah...',
+                'select': true
+            });
+            $('#hapus_pilihan').button();
         }
     });
     $('#tglbayar').datepicker({
@@ -480,4 +597,5 @@ $(document).ready(function() {
             }
         });
     });
+    get_product();
 })

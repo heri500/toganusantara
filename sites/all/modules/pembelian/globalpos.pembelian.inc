@@ -128,8 +128,8 @@ function simpan_pembelian(){
 		$waktujual = $_POST["tglbeli"]." ".date("H:i:s");
 		$caraBayar = $_POST["carabayar"];
 		global $user;
-		db_query("INSERT INTO pembelian (nonota, idpemakai, total, bayar, kembali, tglpembelian, carabayar) VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%s')",
-		$no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual, $caraBayar);
+		db_query("INSERT INTO pembelian (nonota, idpemakai, total, bayar, kembali, tglpembelian, carabayar, idsupplier) VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%s', '%d')",
+		$no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual, $caraBayar,$_POST["idsupplier"]);
 		$next_id = db_last_insert_id('pembelian', 'idpembelian');
 		print $next_id;
 		if ($kembali < 0){

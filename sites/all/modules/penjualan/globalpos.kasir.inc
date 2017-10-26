@@ -18,7 +18,8 @@ function penjualan($idtitipanlaundry = null, $alamatasal = null){
 	drupal_add_js('misc/media/datatables/js/dataTables.addtr.js');
 	drupal_add_js('misc/media/datatables/js/number.format.js');
 	drupal_add_js('misc/media/jquery.autotab-1.1b.js');
-	_addChosenJqueryPlugins();
+    _add_chosen_jquery_plugins_old();
+    _addJeditablePlugins();
 	$idPelanggan = 0;
 	if (!empty($idtitipanlaundry)){
 		if (empty($alamatasal)){
@@ -159,6 +160,9 @@ function penjualan($idtitipanlaundry = null, $alamatasal = null){
 	$penjualan .= '<div title="UBAH HARGA" id="dialogubahharga">';
 	$penjualan .= '<label>Harga Baru : </label><input type="text" id="newharga" name="newharga" value="1">';
 	$penjualan .= '</div>';
+    $penjualan .= '<div title="UBAH HARGA" id="dialogubahharga2">';
+    $penjualan .= '<label>Harga Baru : </label><input type="text" id="newharga2" name="newharga2" value="1">';
+    $penjualan .= '</div>';
 	$penjualan .= '<div title="UBAH QTY" id="dialogubahqty">';
 	$penjualan .= '<label>Qty Baru : </label><input type="text" id="newqty" name="newqty" value="1">';
 	$penjualan .= '</div>';
@@ -310,14 +314,15 @@ function simpan_penjualan(){
 			$HARGAJUAL = $pecahnilai[2];
 			$DISKON = $pecahnilai[3];
 			$batchCode = $pecahnilai[4];
+            $PPN = $pecahnilai[5];
 			$result = db_query("SELECT type_product, hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);	
 			$data = db_fetch_object($result);
 			$HARGAPOKOK = $data->hargapokok;
 			$totalmodal = $totalmodal + ($HARGAPOKOK*$QTY);
 			$STOKSEBELUM = $data->stok;
-			db_query("INSERT INTO detailpenjualan(idpenjualan, idproduct, jumlah, hargapokok, hargajual, diskon) VALUES
-			('%d', '%d', '%f', '%f', '%f', '%f')",
-			$next_id,$IDPRODUK,$QTY,$HARGAPOKOK,$HARGAJUAL,$DISKON);
+			db_query("INSERT INTO detailpenjualan(idpenjualan, idproduct, jumlah, hargapokok, hargajual, diskon, ppn) VALUES
+			('%d', '%d', '%f', '%f', '%f', '%f', '%f')",
+			$next_id,$IDPRODUK,$QTY,$HARGAPOKOK,$HARGAJUAL,$DISKON,$PPN);
 			if ($data->type_product == 0){
 				$STOKSEKARANG = $STOKSEBELUM - $QTY;
 				db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'",$STOKSEKARANG,$IDPRODUK);
@@ -530,15 +535,9 @@ function cari_produk(){
 		    berlaku_sebelum_zuhur FROM product WHERE idproduct=%d", $idBarang);
             $data = db_fetch_object($result);
             if ($data->idproduct) {
-                $result2 = db_query("SELECT besardiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
-                    $_POST["idpelanggan"], $data->idkategori);
-                $datadiskon = db_fetch_object($result2);
-                if ($datadiskon->besardiskon >= 0) {
-                    $DISKON = $datadiskon->besardiskon;
-                } else {
-                    $DISKON = 0;
-                }
-                if ($_POST["idpelanggan"] == 0) {
+                if (isset($_POST["idpelanggan"]) && !empty($_POST['idpelanggan'])) {
+                    $DISKON = get_diskon_product($_POST["idpelanggan"],$data->idproduct);
+                }else{
                     $DISKON = 0;
                 }
                 $takeTime = calculateTakeTime($data->lead_time, $_POST["waktumasuk"], $data->aturan_jam_kerja, $data->berlaku_sebelum_zuhur);
@@ -554,15 +553,9 @@ function cari_produk(){
 		    OR UPPER(namaproduct) LIKE '%s') AND status_product = 1 LIMIT 50", $KATACARI, $KATACARI, $KATACARI);
             $data = db_fetch_object($result);
             if ($data->idproduct) {
-                $result2 = db_query("SELECT besardiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
-                $_POST["idpelanggan"], $data->idkategori);
-                $datadiskon = db_fetch_object($result2);
-                if ($datadiskon->besardiskon >= 0) {
-                    $DISKON = $datadiskon->besardiskon;
-                } else {
-                    $DISKON = 0;
-                }
-                if ($_POST["idpelanggan"] == 0) {
+                if (isset($_POST["idpelanggan"]) && !empty($_POST['idpelanggan'])) {
+                    $DISKON = get_diskon_product($_POST["idpelanggan"],$data->idproduct);
+                }else{
                     $DISKON = 0;
                 }
                 $takeTime = calculateTakeTime($data->lead_time, $_POST["waktumasuk"], $data->aturan_jam_kerja, $data->berlaku_sebelum_zuhur);
@@ -604,8 +597,10 @@ function view_kasir($idtitipanlaundry = null, $alamatasal = null){
 	$kasirtabel .= '<th>PRODUK</th>';
 	$kasirtabel .= '<th>HARGA</th>';
 	$kasirtabel .= '<th class="diskon2">%</th>';
+    $kasirtabel .= '<th class="diskon2">PPN</th>';
 	$kasirtabel .= '<th class="diskon2">QTY</th>';
 	$kasirtabel .= '<th class="subtotal">SUBTOTAL</th>';
+    $kasirtabel .= '<th class="tablebutton"></th>';
 	$kasirtabel .= '</tr>';
 	$kasirtabel .= '</thead>';
 	$kasirtabel .= '<tbody>';

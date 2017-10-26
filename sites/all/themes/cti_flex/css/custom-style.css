@@ -753,9 +753,6 @@ input.hasDatepicker{
 #keuangan-input-pemasukan-form .form-item{
 	margin: 0;	
 }
-.chosen-container-single .chosen-search{
-	width: 98% !important;	
-}
 .form-add-dialog {
 	font-size: 12px;	
 }

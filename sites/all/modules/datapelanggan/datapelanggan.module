@@ -108,6 +108,15 @@ function datapelanggan_menu() {
         'type' => MENU_CALLBACK,
         'file' => 'globalpos.pelanggan.inc'
     );
+    $items['datapelanggan/updatediskon'] = array(
+        'title' => t('Update Diskon Pelanggan'),
+        'description' => 'Update diskon kategori/product pelanggan',
+        'page callback' => 'update_diskon_kategori_ajax',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pelanggan'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pelanggan.inc'
+    );
 	return $items;
 } // end hook menu
 

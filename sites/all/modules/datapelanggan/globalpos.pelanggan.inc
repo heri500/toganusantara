@@ -26,6 +26,8 @@ function data_pelanggan(){
     drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.print.js');
 	drupal_add_js('misc/media/jquery.jeditable.js');
 	drupal_add_js('misc/media/jquery.autotab-1.1b.js');
+    _addChosenJqueryPlugins();
+    _addJeditablePlugins();
 	drupal_add_js(
 		array(
 			'filepath' => file_directory_path()
@@ -59,12 +61,15 @@ function data_pelanggan(){
 	$viewtabelpelanggan .= '<div id="diskonpelanggan">';
 	$viewtabelpelanggan .= '<div id="tambahdiskon">';
 	$result = db_query("SELECT idkategori,kodekategori,kategori FROM kategori ORDER BY kodekategori,kategori");
-	$pilihankategori = '<select id="idkategori" name="idkategori" onkeyup="filtersubkategori();" onchange="filtersubkategori();">';
+	$pilihankategori = '<select id="idkategori" name="idkategori" onchange="get_product()">';
 	while ($data = db_fetch_object($result)){
 		$pilihankategori .= '<option value="'.$data->idkategori.'">'.$data->kodekategori.'-'.$data->kategori.'</option>';
 	}
 	$pilihankategori .= '</select>';
+    $pilihanproduct = '<select id="idproduct" name="idproduct" multiple="multiple">';
+    $pilihanproduct .= '</select>';
 	$viewtabelpelanggan .= '<div class="baris"><label>Pilih Kategori Produk</label>'.$pilihankategori.'</div>';
+    $viewtabelpelanggan .= '<div class="baris"><label>Pilih Produk</label>'.$pilihanproduct.'</div>';
 	$viewtabelpelanggan .= '<div class="baris"><label>Diskon</label><input type="text" id="diskon" name="diskon" value="0"></div>';
 	$viewtabelpelanggan .= '<input type="hidden" id="idpelanggan" name="idpelanggan">';
 	$viewtabelpelanggan .= '<input type="hidden" id="namapelanggandiskon" name="namapelanggandiskon">';
@@ -82,11 +87,17 @@ function data_pelanggan(){
  * @return void
  */
 function hapus_diskon(){
-	if ($_POST["idpelanggan"] > 0 AND $_POST["idkategori"] > 0){
-		db_query("DELETE FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
-		$_POST["idpelanggan"],$_POST["idkategori"]);
+	if (isset($_REQUEST["id"]) && !empty($_REQUEST["id"])){
+	    $IdDiskon = $_REQUEST["id"];
+	    if (is_array($IdDiskon)){
+	        for ($i = 0;$i < count($IdDiskon);$i++){
+                db_query("DELETE FROM diskonkategori WHERE id='%d'", $IdDiskon[$i]);
+            }
+        }else {
+            db_query("DELETE FROM diskonkategori WHERE id='%d'", $IdDiskon);
+        }
 	}
-	echo $_POST["idpelanggan"]." ".$_POST["idkategori"];
+	echo $IdDiskon;
 	exit();
 }
 
@@ -94,17 +105,39 @@ function hapus_diskon(){
  *@return void
  */
 function simpan_diskon(){
-	if ($_POST["idpelanggan"] AND $_POST["idkategori"]){
-		$result = db_query("SELECT COUNT(*) AS jumlahdiskon FROM diskonkategori WHERE idpelanggan='%d' AND idkategori='%d'",
-		$_POST["idpelanggan"],$_POST["idkategori"]);
-		$data = db_fetch_object($result);
-		if ($data->jumlahdiskon > 0){
-			db_query("UPDATE diskonkategori SET besardiskon='%f' WHERE idpelanggan='%d' AND idkategori='%d'",
-			$_POST["diskon"],$_POST["idpelanggan"],$_POST["idkategori"]);
-		}else{
-			db_query("INSERT INTO diskonkategori (besardiskon,idpelanggan,idkategori)VALUES('%f','%d','%d')",
-			$_POST["diskon"],$_POST["idpelanggan"],$_POST["idkategori"]);
-		}
+	if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])
+        && isset($_POST["idkategori"]) && !empty($_POST["idkategori"])){
+	    if (isset($_REQUEST["idproduct"]) && !empty($_REQUEST["idproduct"])){
+	        $ArrayProduct = $_REQUEST["idproduct"];
+	        for ($i = 0;$i < count($ArrayProduct);$i++) {
+                $IdProduct = $ArrayProduct[$i];
+                $StrSQL = 'SELECT COUNT(*) AS jumlahdiskon FROM diskonkategori ';
+                $StrSQL .= 'WHERE idpelanggan=%d AND idkategori=%d AND idproduct=%d';
+                $DiskonExists = db_result(db_query($StrSQL, $_POST["idpelanggan"], $_POST["idkategori"], $IdProduct));
+                if ($DiskonExists > 0) {
+                    $StrUpdate = "UPDATE diskonkategori SET besardiskon='%f' ";
+                    $StrUpdate .= "WHERE idpelanggan=%d AND idkategori=%d AND idproduct=%d";
+                    db_query($StrUpdate,
+                        $_POST["diskon"], $_POST["idpelanggan"], $_POST["idkategori"], $IdProduct);
+                } else {
+                    db_query("INSERT INTO diskonkategori (besardiskon,idpelanggan,idkategori, idproduct)VALUES('%f','%d','%d','%d')",
+                        $_POST["diskon"], $_POST["idpelanggan"], $_POST["idkategori"], $IdProduct);
+                }
+            }
+        }else {
+	        $StrSQL = 'SELECT COUNT(*) AS jumlahdiskon FROM diskonkategori ';
+            $StrSQL .= 'WHERE idpelanggan=%d AND idkategori=%d AND idproduct IS NULL';
+	        $DiskonExists = db_result(db_query($StrSQL, $_POST["idpelanggan"], $_POST["idkategori"]));
+            if ($DiskonExists > 0) {
+                $StrUpdate = "UPDATE diskonkategori SET besardiskon='%f' ";
+                $StrUpdate .= "WHERE idpelanggan=%d AND idkategori=%d AND idproduct IS NULL";
+                db_query($StrUpdate,
+                    $_POST["diskon"], $_POST["idpelanggan"], $_POST["idkategori"]);
+            } else {
+                db_query("INSERT INTO diskonkategori (besardiskon,idpelanggan,idkategori)VALUES('%f','%d','%d')",
+                    $_POST["diskon"], $_POST["idpelanggan"], $_POST["idkategori"]);
+            }
+        }
 		print $data->jumlahdiskon;
 	}
 	exit();
@@ -114,29 +147,40 @@ function simpan_diskon(){
  *@return void
  */
 function tabel_diskon(){
-	if ($_POST["idpelanggan"]){
+	if (isset($_POST['idpelanggan']) && !empty($_POST['idpelanggan'])){
+	    $NamaPelanggan = db_result(db_query('SELECT namapelanggan FROM pelanggan WHERE idpelanggan=%d', $_POST['idpelanggan']));
 		$tabeldiskon ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_diskon">';
 		$tabeldiskon .= '<thead>';
 		$tabeldiskon .= '<tr>';
-		$tabeldiskon .= '<th class="tablebutton"></th>';
+		$tabeldiskon .= '<th class="tablebutton">&nbsp;</th>';
 		$tabeldiskon .= '<th>KATEGORI</th>';
+        $tabeldiskon .= '<th>PRODUK</th>';
 		$tabeldiskon .= '<th class="diskon">DISKON[%]</th>';
+        $tabeldiskon .= '<th class="tablebutton">&nbsp;</th>';
 		$tabeldiskon .= '</tr>';
 		$tabeldiskon .= '</thead>';
 		$tabeldiskon .= '<tbody>';
-		$result = db_query("SELECT a.besardiskon,a.idkategori,b.kategori FROM diskonkategori a,kategori b WHERE a.idkategori=b.idkategori AND
-		a.idpelanggan='%d'",$_POST["idpelanggan"]);
+		$StrSQL = 'SELECT id, besardiskon, diskon.idkategori, kat.kategori, diskon.idproduct,';
+        $StrSQL .= 'prod.namaproduct FROM diskonkategori AS diskon ';
+        $StrSQL .= 'LEFT JOIN kategori AS kat ON diskon.idkategori = kat.idkategori ';
+        $StrSQL .= 'LEFT JOIN product AS prod ON prod.idproduct = diskon.idproduct ';
+        $StrSQL .= 'WHERE diskon.idpelanggan = %d';
+		$result = db_query($StrSQL,$_POST["idpelanggan"]);
 		while($data = db_fetch_object($result)){
 			$tabeldiskon .= '<tr>';
-			$hapusdiskon = '<img width="24" onclick="hapus_diskon(\''.$_POST["idpelanggan"].'\',\''.$data->idkategori.'\',\''.$_POST["namapelanggan"].'\');" title="Klik untuk menghapus diskon pada kategori ini" src="'.base_path().'misc/media/images/close.ico">';
+			$hapusdiskon = '<img width="24" onclick="hapus_diskon(\''.$_POST["idpelanggan"].'\','.$data->id.',\''.$_POST["namapelanggan"].'\');" title="Klik untuk menghapus diskon pada kategori/product ini" src="'.base_path().'misc/media/images/close.ico">';
 			$tabeldiskon .= '<td class="center">'.$hapusdiskon.'</td>';
 			$tabeldiskon .= '<td class="center">'.$data->kategori.'</td>';
-			$tabeldiskon .= '<td class="angka">'.$data->besardiskon.'</td>';
+            $tabeldiskon .= '<td>'.$data->namaproduct.'</td>';
+			$tabeldiskon .= '<td id="diskon-'.$data->id.'" class="angka besar-diskon">'.$data->besardiskon.'</td>';
+			$Checkbox = '<input class="selected-diskon" type="checkbox" id="select-diskon-'.$data->id.'" name="select-diskon-'.$data->id.'" value="'.$data->id.'">';
+            $tabeldiskon .= '<td class="center">'.$Checkbox.'</td>';
 			$tabeldiskon .= '</tr>';
 		}
 		$tabeldiskon .= '</tbody>';
 		$tabeldiskon .= '</table>';
-		$tabeldiskon .= '<br><br>';
+        $tabeldiskon .= '<br>';
+        $tabeldiskon .= '<div class="baris"><button id="hapus_pilihan" onclick="hapus_pilihan_diskon('.$_POST['idpelanggan'].', \''.$NamaPelanggan.'\')">Hapus Diskon</button></div>';
 		print $tabeldiskon;
 	}
 	exit();
@@ -372,12 +416,19 @@ function syncHutangPelangganAjax(){
 function get_pelanggan_info(){
     if (isset($_POST['idpelanggan']) && !empty($_POST['idpelanggan'])){
         $IdPelanggan = $_POST['idpelanggan'];
-        $StrSQL = "SELECT idpelanggan, kodepelanggan, namapelanggan, telp, alamat, email, url_database, username, ";
-        $StrSQL .= "password FROM pelanggan WHERE idpelanggan='%d'";
-        $result = db_query($StrSQL,$IdPelanggan);
-        $data[] = db_fetch_object($result);
-        print json_encode($data);
+        print json_encode(array(get_pelanggan_data($IdPelanggan)));
         exit();
     }
+    exit();
+}
+
+function update_diskon_kategori_ajax(){
+    $Diskon = 0;
+    if (isset($_POST['id']) && !empty($_POST['id']) && isset($_POST['value'])){
+        $BesarDiskon = $_POST['value'];
+        $SplitId = explode('-',$_POST['id']);
+        $Diskon = update_diskon_kategori($SplitId[1],$BesarDiskon);
+    }
+    print $Diskon;
     exit();
 }

@@ -457,11 +457,11 @@ function editproduk(idproduk){
 }
 function view_status(kondisistok){
     if (kondisistok != 'all' && kondisistok != 'nonaktif') {
-        window.location = pathutama + 'dataproduk/produk?statusstok=' + kondisistok;
+        window.location = pathutama + 'dataproduk/produk?statusstok=' + kondisistok +'&server='+ $('#idpelanggan').val();
     }else if(kondisistok == 'nonaktif'){
-        window.location = pathutama + 'dataproduk/produk?status_product=0';
+        window.location = pathutama + 'dataproduk/produk?status_product=0&server='+ $('#idpelanggan').val();
     }else{
-        window.location = pathutama + 'dataproduk/produk';
+        window.location = pathutama + 'dataproduk/produk?server='+ $('#idpelanggan').val();
     }
 }
 function save_produk(){
@@ -489,10 +489,10 @@ function export_to_xls(){
 $(document).ready(function() {
     pathutama = Drupal.settings.basePath;
     pathfile = Drupal.settings.filePath;
-    alamatupdate = Drupal.settings.basePath + 'dataproduk/updateproduk';
     statusstok = Drupal.settings.statusstokfilter;
     statusproduct = Drupal.settings.statusproduct;
-    alamatServer = Drupal.settings.basePath;
+    alamatServer = Drupal.settings.server;
+    alamatupdate = alamatServer + 'dataproduk/updateproduk';
     $('#dialogtambahkategori').dialog({
         modal: true,
         width: 350,
@@ -825,7 +825,9 @@ $(document).ready(function() {
             alamatupdate = alamatServer + 'dataproduk/updateproduk';
             oTable.destroy();
             tampilkantabelproduk();
+            $(':button').prop('disabled', false);
         }else {
+            $(':button').prop('disabled', true);
             var request = new Object();
             request.idpelanggan = $(this).val();
             alamatpelanggan = pathutama + 'datapelanggan/getpelangganinfo';

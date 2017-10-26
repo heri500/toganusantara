@@ -28,9 +28,16 @@ function data_produk(){
 	drupal_add_js('sites/all/libraries/uploadify/jquery.uploadify.v2.1.0.min.js');
 	drupal_add_js('sites/all/libraries/uploadify/swfobject.js');
 	$filePath = base_path().file_directory_path();
+	if (isset($_GET['server']) && !empty($_GET['server'])){
+        $DataPelanggan = get_pelanggan_data($_GET['server']);
+        $ServerData = 'http://'.$DataPelanggan->url_database.'/';
+    }else{
+        $ServerData = base_path();
+    }
 	drupal_add_js(
 		array(
 			'filePath'  => $filePath,
+            'server' => $ServerData,
 		),
 		'setting'
 	);
@@ -155,8 +162,9 @@ function data_produk(){
 			'setting'
 		);
 	}
+	$IdPelanggan = isset($_GET['server']) ? $_GET['server'] : 0;
 	if ($_SERVER[HTTP_HOST] == 'toganusantara.dev' || $_SERVER[HTTP_HOST] == 'pusat.toganusantara.com') {
-        $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection(null, 'PILIH SERVER', false).'</div>';
+        $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection($IdPelanggan, 'PILIH SERVER', false).'</div>';
     }else{
         $pilihanPelanggan = '';
     }

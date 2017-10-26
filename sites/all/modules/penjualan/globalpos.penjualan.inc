@@ -60,6 +60,12 @@ function view_tabel_penjualan(){
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.html5.js');
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.print.js');
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.colVis.min.js');
+    if (isset($_POST['idserver']) && !empty($_POST['idserver'])){
+        $DataPelanggan = get_pelanggan_data($_POST['idserver']);
+        $ServerData = 'http://'.$DataPelanggan->url_database.'/';
+    }else{
+        $ServerData = base_path();
+    }
 	drupal_add_js(
 		array(
 			'urutan' => $urutan,
@@ -67,6 +73,7 @@ function view_tabel_penjualan(){
 			'tglAwal' => $tgl1,
 			'tglAkhir' => $tgl2,
 			'filterId' => $filterId,
+            'server' => $ServerData,
 		),
 		'setting');
 	$modulePath = drupal_get_path('module','penjualan');
@@ -77,7 +84,14 @@ function view_tabel_penjualan(){
 	$pilihantampil .= '<option '.$produk.'>PRODUK</option>';
 	$pilihantampil .= '</select>';
 	$pilihperiode = '<form action="'.base_path().'penjualan/viewpenjualan" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PENJUALAN </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
-	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.'<button>LIHAT PENJUALAN</button></div></form>';
+	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.'<button>LIHAT PENJUALAN</button></div>';
+    $IdPelanggan = isset($_GET['server']) ? $_GET['server'] : 0;
+    if ($_SERVER[HTTP_HOST] == 'toganusantara.dev' || $_SERVER[HTTP_HOST] == 'pusat.toganusantara.com') {
+        $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection($IdPelanggan, 'PILIH SERVER', false,'idserver').'</div>';
+    }else{
+        $pilihanPelanggan = '';
+    }
+    $pilihperiode .= $pilihanPelanggan.'</form>';
 	$viewpenjualan = $pilihperiode.'<div id="viewpenjualan">'.$tabeltampil.'</div>';
 	$viewpenjualan .= '<div id="dialogdetail" title="DETAIL PENJUALAN">';
 	$viewpenjualan .= '<div id="table-detail-wrapper"></div>';
@@ -158,6 +172,8 @@ function detail_penjualan(){
 		$tabelpenjualan .= '<th>PRODUK</th>';
 		$tabelpenjualan .= '<th class="qty">QTY</th>';
 		$tabelpenjualan .= '<th>H.JUAL</th>';
+        $tabelpenjualan .= '<th>DISKON</th>';
+        $tabelpenjualan .= '<th>PPN</th>';
 		$tabelpenjualan .= '<th>H.MODAL</th>';
 		$tabelpenjualan .= '<th>SUBTOTAL</th>';
 		$tabelpenjualan .= '<th>MODAL</th>';
@@ -168,7 +184,7 @@ function detail_penjualan(){
 		$tabelpenjualan .= '</tbody>';
 		$tabelpenjualan .= '<tfoot>';
 		$tabelpenjualan .= '<tr>';
-		$tabelpenjualan .= '<th class="right" colspan="6">TOTAL</th>';
+		$tabelpenjualan .= '<th class="right" colspan="8">TOTAL</th>';
 		$tabelpenjualan .= '<th>&nbsp;</th>';
 		$tabelpenjualan .= '<th>&nbsp;</th>';
 		$tabelpenjualan .= '<th>&nbsp;</th>';

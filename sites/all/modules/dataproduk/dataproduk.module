@@ -171,11 +171,19 @@ function dataproduk_menu() {
 		'access arguments' => array('Admin Data Produk'),
 		'type' => MENU_CALLBACK,
 	);
+    $items['dataproduk/getproductbykategori'] = array(
+        'title' => t('Get product by kategori'),
+        'description' => 'Get product by kategori',
+        'page callback' => 'get_data_product_by_kategori_ajax',
+        'access callback' => 'user_access',
+        'access arguments' => array('Akses Data Produk'),
+        'type' => MENU_CALLBACK,
+    );
 	return $items;
 } // end hook menu
 
 function dataproduk_perm() {
-	return array('Admin Kategori Produk','Admin Subkategori Produk','Admin Data Produk');
+	return array('Admin Kategori Produk','Admin Subkategori Produk','Admin Data Produk','Akses Data Produk');
 }
 /*
 	$array_to_js : array('key' => 'value')
@@ -477,4 +485,36 @@ function get_konversi_satuan_ajax(){
 	}
 	print $konversiSatuan;
 	exit();
+}
+function get_data_product_by_kategori_ajax(){
+    if (isset($_POST['idkategori']) && !empty($_POST['idkategori'])){
+        $StrSql = 'SELECT idproduct, namaproduct FROM product WHERE idkategori=%d';
+        $result = db_query($StrSql,$_POST['idkategori']);
+        $ArrayProduct = array();
+        while ($data = db_fetch_object($result)){
+            $ArrayProduct[] = $data;
+        }
+        print json_encode($ArrayProduct);
+    }
+    exit();
+}
+
+function get_diskon_product($IdPelanggan = null, $IdProduct = null){
+    $DiskonProduct = 0;
+    if (!empty($IdPelanggan) && !empty($IdProduct)){
+        $StrSql = 'SELECT besardiskon FROM diskonkategori WHERE idproduct=%d AND idpelanggan=%d';
+        $DiskonProduct = db_result(db_query($StrSql, $IdProduct, $IdPelanggan));
+        if (empty($DiskonProduct)){
+            $StrSql = 'SELECT idkategori FROM product WHERE idproduct=%d';
+            $IdKategori = db_result(db_query($StrSql, $IdProduct));
+            if (!empty($IdKategori)){
+                $StrSql = 'SELECT besardiskon FROM diskonkategori WHERE idkategori=%d AND idpelanggan=%d AND idproduct IS NULL';
+                $DiskonProduct = db_result(db_query($StrSql, $IdKategori, $IdPelanggan));
+            }
+        }
+        if (empty($DiskonProduct)){
+            $DiskonProduct = 0;
+        }
+    }
+    return $DiskonProduct;
 }

@@ -32,10 +32,17 @@ function ARRAY_TYPE_ITEM(){
 }
 function _addChosenJqueryPlugins(){
 	$path = 'sites/all/libraries/chosen/';
-	$csspath = $path.'css/chosen.css';
+	$csspath = $path.'chosen.css';
 	drupal_add_css($csspath);
-	$jspath = $path.'js/chosen.jquery.min.js';
+	$jspath = $path.'chosen.jquery.min.js';
 	drupal_add_js($jspath);
+}
+function _add_chosen_jquery_plugins_old(){
+    $path = 'sites/all/libraries/chosen_old/';
+    $csspath = $path.'chosen.css';
+    drupal_add_css($csspath);
+    $jspath = $path.'chosen.jquery.min.js';
+    drupal_add_js($jspath);
 }
 function _addNewDatabalesPlugins(){
 	drupal_add_css('sites/all/libraries/datatables.1.10/jquery/jquery-ui.css');

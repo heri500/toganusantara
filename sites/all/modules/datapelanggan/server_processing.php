@@ -1144,8 +1144,11 @@ function serverSideDetailPenjualan($request){
 
 	$firstRecord = $pageStart;
 	$lastRecord = $pageStart + $pageLength;
-	$strSQL = 'SELECT detail.iddetail,product.barcode, product.namaproduct, detail.jumlah,';
-	$strSQL .= 'detail.hargapokok,detail.hargajual,(detail.hargajual*detail.jumlah) AS subtotal,';
+	$strSQL = 'SELECT detail.iddetail,product.barcode, product.namaproduct, detail.jumlah,detail.diskon, detail.ppn, ';
+	$strSQL .= 'detail.hargapokok,detail.hargajual,';
+	$strSQL .= '((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) AS subtotal,';
+    $strSQL .= '((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) + ';
+    $strSQL .= '(((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) * ppn/100)  AS subtotalppn,';
 	$strSQL .= '(detail.hargapokok*detail.jumlah) AS modal,';
 	$strSQL .= '((detail.hargajual-detail.hargapokok)*detail.jumlah) AS laba ';
 	$strSQL .= 'FROM detailpenjualan detail LEFT JOIN product product ';
@@ -1195,8 +1198,10 @@ function serverSideDetailPenjualan($request){
 		$rowData[] = $data->namaproduct;
 		$rowData[] = $data->jumlah;
 		$rowData[] = number_format($data->hargajual,0,',','.');
+        $rowData[] = number_format($data->diskon,0,',','.');
+        $rowData[] = number_format($data->ppn,0,',','.');
 		$rowData[] = number_format($data->hargapokok,0,',','.');
-		$rowData[] = number_format($data->subtotal,0,',','.');
+		$rowData[] = number_format($data->subtotalppn,0,',','.');
 		$rowData[] = number_format($data->modal,0,',','.');
 		$rowData[] = number_format($data->laba,0,',','.');
 		$rowData[] = $data->iddetail;
