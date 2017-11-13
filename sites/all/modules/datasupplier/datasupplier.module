@@ -1,88 +1,98 @@
 <?php
 
-function datasupplier_menu() {
-	$items['datasupplier/supplier'] = array(
-    'title' => t('Data Supplier'),
-    'description' => 'Manajemen Data Supplier',
-		'page callback' => 'data_supplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/detailhutang'] = array(
-    'title' => t('Detail Hutang ke Supplier'),
-    'description' => 'Detail Hutang ke Supplier',
-		'page callback' => 'detail_hutang',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/detailpembayaran'] = array(
-    'title' => t('Detail Pembayaran ke Supplier'),
-    'description' => 'Detail Pembayaran ke Supplier',
-		'page callback' => 'detail_pembayaran_hutang',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/pembayaran'] = array(
-    'title' => t('Form Pembayaran Hutang ke Supplier'),
-    'description' => 'Form Pembayaran Hutang ke Supplier',
-		'page callback' => 'bayar_hutang_supplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/simpansupplier'] = array(
-    'title' => t('Simpan Data Supplier'),
-    'description' => 'Simpan Data Supplier',
-		'page callback' => 'simpan_supplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/updatesupplier'] = array(
-    'title' => t('Update Data Supplier'),
-    'description' => 'Update Data Supplier',
-		'page callback' => 'update_supplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Data Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.supplier.inc'
-	);
-	$items['datasupplier/cpsupplier'] = array(
-    'title' => t('Contact Person Supplier'),
-    'description' => 'Manajemen Contact Person Supplier',
-		'page callback' => 'data_cpsupplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Contact Person Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.cpsupplier.inc'
-	);
-	$items['datasupplier/simpancpsupplier'] = array(
-    'title' => t('Simpan Contact Person Supplier'),
-    'description' => 'Simpan Contact Person Supplier',
-		'page callback' => 'simpan_cpsupplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Contact Person Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.cpsupplier.inc'
-	);
-	$items['datasupplier/updatecpsupplier'] = array(
-    'title' => t('Update Contact Person Supplier'),
-    'description' => 'Update Contact Person Supplier',
-		'page callback' => 'update_cpsupplier',
-		'access callback' => 'user_access',
-		'access arguments' => array('Admin Contact Person Supplier'),
-		'type' => MENU_CALLBACK,
-		'file' => 'globalpos.cpsupplier.inc'
-	);
-	return $items;
+function datasupplier_menu()
+{
+    $items['datasupplier/supplier'] = array(
+        'title' => t('Data Supplier'),
+        'description' => 'Manajemen Data Supplier',
+        'page callback' => 'data_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/detailhutang'] = array(
+        'title' => t('Detail Hutang ke Supplier'),
+        'description' => 'Detail Hutang ke Supplier',
+        'page callback' => 'detail_hutang',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/detailpembayaran'] = array(
+        'title' => t('Detail Pembayaran ke Supplier'),
+        'description' => 'Detail Pembayaran ke Supplier',
+        'page callback' => 'detail_pembayaran_hutang',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/pembayaran'] = array(
+        'title' => t('Form Pembayaran Hutang ke Supplier'),
+        'description' => 'Form Pembayaran Hutang ke Supplier',
+        'page callback' => 'bayar_hutang_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/simpansupplier'] = array(
+        'title' => t('Simpan Data Supplier'),
+        'description' => 'Simpan Data Supplier',
+        'page callback' => 'simpan_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/updatesupplier'] = array(
+        'title' => t('Update Data Supplier'),
+        'description' => 'Update Data Supplier',
+        'page callback' => 'update_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    $items['datasupplier/cpsupplier'] = array(
+        'title' => t('Contact Person Supplier'),
+        'description' => 'Manajemen Contact Person Supplier',
+        'page callback' => 'data_cpsupplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Contact Person Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.cpsupplier.inc'
+    );
+    $items['datasupplier/simpancpsupplier'] = array(
+        'title' => t('Simpan Contact Person Supplier'),
+        'description' => 'Simpan Contact Person Supplier',
+        'page callback' => 'simpan_cpsupplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Contact Person Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.cpsupplier.inc'
+    );
+    $items['datasupplier/updatecpsupplier'] = array(
+        'title' => t('Update Contact Person Supplier'),
+        'description' => 'Update Contact Person Supplier',
+        'page callback' => 'update_cpsupplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Contact Person Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.cpsupplier.inc'
+    );
+    $items['datasupplier/deletepembayaran'] = array(
+        'title' => t('Delete pembayaran supplier'),
+        'description' => 'Delete pembayaran supplier',
+        'page callback' => 'delete_pembayaran_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Supplier'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.supplier.inc'
+    );
+    return $items;
 } // end hook menu
 
 function datasupplier_perm() {

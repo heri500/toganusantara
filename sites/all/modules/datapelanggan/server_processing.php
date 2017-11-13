@@ -169,6 +169,9 @@ function serverSideProduk($request){
 	}else{
 		$strCriteria .= "AND (status_product = 1) ";
 	}
+	if (isset($_REQUEST['idkategori']) && !empty($_REQUEST['idkategori'])){
+        $strCriteria .= "AND (prod.idkategori = ".$_REQUEST['idkategori'].") ";
+    }
 	if ($pageLength != '-1'){
 		$strSQL .= $strCriteria." ORDER BY $orderColumn LIMIT %d, %d";
 	}else{

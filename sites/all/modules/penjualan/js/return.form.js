@@ -8,6 +8,17 @@ var tglsekarang = '';
 var tgltampil = '';
 var cetakstruk = 0;
 var alamatasal = '';
+function addCommas(nStr){
+    nStr += "";
+    x = nStr.split(",");
+    x1 = x[0];
+    x2 = x.length > 1 ? "," + x[1] : "";
+    var rgx = /(\d+)(\d{3})/;
+    while (rgx.test(x1)) {
+        x1 = x1.replace(rgx, "$1" + "." + "$2");
+    }
+    return x1 + x2;
+}
 function tampilkantabelkasir(){
 	oTable = $("#tabel_kasir").dataTable( {
 		"bJQueryUI": true,
@@ -311,18 +322,11 @@ function akhiri_belanja(cetak){
 	$("#idpelanggan").removeAttr("disabled");
 	request.idpelanggan = $("#idpelanggan").val();
 	request.totalbelanja = totalbelanja;
-	request.carabayar = $("#carabayar").val();
+	request.carareturn = $("#carabayar").val();
 	request.bayar = $("#nilaibayar").val();
-	var kembalian = request.bayar - totalbelanja;
-	if (kembalian > 0){
-		request.perlakuankembalian = $("#kembalian").val();
-	}
-	if ($("#idpelanggan").val() == 0 && $("#kembalian").val() == 2){
-		request.perlakuankembalian = 0;
-	}
-	request.tgljual = $("#tgljualkirim").val();
-	if ((kembalian < 0 && $("#idpelanggan").val() != 0) || kembalian >= 0){
-		alamat = pathutama + "penjualan/simpanpenjualan";
+	request.tglreturn = $("#tgljualkirim").val();
+	if ($("#idpelanggan").val() != 0){
+		alamat = pathutama + "penjualan/simpanreturn";
 		$.ajax({
 			type: "POST",
 			url: alamat,
@@ -332,12 +336,12 @@ function akhiri_belanja(cetak){
 				var returndata = data.trim();
 				if (returndata != "error"){
 					if (cetak == 1){
-						window.open(pathutama + "print/6?idpenjualan="+ returndata);
+						window.open(pathutama + "print/6?idreturnjual="+ returndata);
 					}
 					if (typeof Drupal.settings.idtitipanlaundry != 'undefined' && Drupal.settings.idtitipanlaundry > 0){
 						window.location = pathutama + 'penjualan/' + alamatasal;
 					}else{
-						window.location = pathutama + "penjualan/kasir?tanggal="+ request.tgljual +'&afterinsert=1';
+						window.location = pathutama + "penjualan/return?tanggal="+ request.tgljual +'&afterinsert=1';
 					}
 
 				}else{
@@ -346,30 +350,14 @@ function akhiri_belanja(cetak){
 			}
 		});
 	}else{
-		alert("Mohon pilih pelanggan terlebih dulu jika pembayaran dengan cara hutang...!!!");
+		alert("Mohon pilih pelanggan terlebih dulu ...!!!");
 	}
-}
-function hitung_omset(){
-	var request = new Object();
-	request.tglpost = tglsekarang;
-	alamat = pathutama + "penjualan/hitungomset";
-	$.ajax({
-		type: "POST",
-		url: alamat,
-		data: request,
-		cache: false,
-		success: function(data){
-			var omsetsekarang = number_format(data,0,",",".");
-			$("#pesantext").text("OMSET HARI INI ["+ tgltampil +"] : Rp. "+ omsetsekarang);
-			$("#dialogwarning").dialog("open");
-		}
-	});
 }
 function inisialulang(){
 	if (totalproduk > 0){
 		var tanya = confirm("Merubah pelanggan berarti menghapus pembelian yang terinput, YAKIN..!!");
 		if (tanya != 0){
-			window.location = pathutama + "penjualan/kasir?idpelanggan="+ $("#idpelanggan").val();
+			window.location = pathutama + "penjualan/return?idpelanggan="+ $("#idpelanggan").val();
 		}else{
 			$("#barcode").select();
 		}
@@ -551,7 +539,7 @@ $(document).ready(function(){
 			kembali = $("#nilaibayar").val()-totalbelanja;
 			$("#kembali").val("Rp. "+ number_format(kembali,0,",","."));
 			$("#nilaibayar").keyup();
-			$("#nilaibayar").select();
+			$("#totalbelanjauser").select();
 			$("#idpelanggan").removeAttr("disabled");
 			if ($("#idpelanggan").val() != 0){
 				alamat = pathutama + "datapelanggan/gettotalhutang/"+ $("#idpelanggan").val();
@@ -581,6 +569,7 @@ $(document).ready(function(){
 						$("#idpelanggan").attr("disabled","disabled");
 					}
 				});
+                $('#carabayar').change();
 			}else{
 				$("#carabayar option").each(function(){
 					if ($(this).attr('value') == 'DEPOSIT' || $(this).attr('value') == 'HUTANG'){
@@ -614,8 +603,6 @@ $(document).ready(function(){
 			kirim_data(0);
 		}else if (e.keyCode == 115){
 			hapus_latest_produk();
-		}else if (e.keyCode == 119){
-			hitung_omset();
 		}else if (e.keyCode == 113){
 			if ($("#idpelanggan").val() == 0){
 				$("#tombolubahharga").click();
@@ -760,7 +747,7 @@ $(document).ready(function(){
 		}
 	});
 	$("#nilaibayar").autotab({ format : 'numeric' });
-	$("#nilaibayar,#nomerkartu").keyup(function(e){
+	$("#nilaibayar").keyup(function(e){
 		kembali = $("#nilaibayar").val() - totalbelanja;
 		$("#kembali").val("Rp. "+ number_format(kembali,0,",","."));
 		if (kembali > 0){
@@ -769,7 +756,10 @@ $(document).ready(function(){
 			$("#field_kembalian").hide();
 		}
 		if (e.keyCode == 13){
-			akhiri_belanja(cetakstruk);
+            var konfirmasi = confirm('Simpan return barang total : Rp. '+ addCommas(totalbelanja) +' dengan cara : '+ $('#nilaibayar').text() +'..??!');
+            if (konfirmasi) {
+                akhiri_belanja(cetakstruk);
+            }
 		}
 	});
 	$("#tgljual").datepicker({
@@ -782,7 +772,7 @@ $(document).ready(function(){
 			$("#barcode").select();
 		}
 	});
-	$("#tgljual").css("width","177px");
+	$("#tgljual,#kasir").css("width","177px");
 	if (typeof Drupal.settings.data_laundry != 'undefined'){
 		if (Drupal.settings.data_laundry.length > 0){
 			var totaldetaildata = Drupal.settings.data_laundry.length;
@@ -806,47 +796,37 @@ $(document).ready(function(){
 			}
 		}
 	}
-	$("#carabayar").change(function(){
-		if ($(this).val() == 'DEBIT' || $(this).val() == 'GIRO'){
-			$("#field_no_kartu").show();
-			$("#field_bayar").show();
-			$("#nilaibayar").val(totalbelanja).attr('readonly','readonly').removeAttr('disabled'); 
-			$("#nomerkartu").select();
-			$("#nilaibayar").keyup();
-		}else if($(this).val() == 'DEPOSIT'){
-			$("#field_bayar").show();
-			$("#field_no_kartu").hide();
-			$("#nilaibayar").val(totalbelanja).attr('readonly','readonly').removeAttr('disabled'); 
-			$("#nilaibayar").keyup();
-			$("#nilaibayar").focus();
-		}else{
-			$("#field_no_kartu").hide();
-			$("#field_bayar").show();
-			$("#nilaibayar").removeAttr('readonly').removeAttr('disabled');
-			if ($(this).val() == 'HUTANG'){
-				$("#nilaibayar").val(0);
-			}
-			$("#nilaibayar").select();
-		}
-	});
-	if (typeof Drupal.settings.idtitipanlaundry != 'undefined'){
-		$("#idpelanggan").attr("disabled","disabled");
-	}
-	$("#kembalian").change(function(){
-		$("#nilaibayar").select();
-	});
+    $('#carabayar').change(function(){
+        if ($('#carabayar').val() == 3){
+            $('#nilaibayar').val(totalbelanja);
+            kembali = totalbelanja;
+            $('#cashback').show();
+            //$('#kembali').val('Rp. '+ number_format(kembali,0,',','.'));
+            //$('#nilaibayar').removeAttr('readonly','readonly');
+            $('#nilaibayar').select();
+        }else{
+            if ($('#carabayar').val() == 2){
+                $('#nilaibayar').val(totalbelanja);
+                $('#kembali').val(0);
+                $('#cashback').show();
+                $('#nilaibayar').attr('readonly','readonly');
+                $('#nilaibayar').select();
+            }else{
+                $('#cashback').hide();
+                $('#nilaibayar').val(0);
+            }
+            $('#bariskembali').hide();
+        }
+    });
+    $('#carabayar,#totalbelanjauser').keyup(function(e) {
+        if (e.keyCode == 13) {
+            var konfirmasi = confirm('Simpan return barang total : Rp. '+ addCommas(totalbelanja) +' dengan cara : '+ $('#nilaibayar').text() +'..??!');
+            if (konfirmasi) {
+                akhiri_belanja();
+            }
+        }
+    });
 	$('#info-kasir-waktu').css('background','url('+ Drupal.settings.logo +') 99% 50% no-repeat');
 	$('#info-kasir-waktu').css('background-size','75px 75px');
 	$('#tempattombolkasir').css('height','330px');
-	if (Drupal.settings.upload_data){
-		alamat = pathutama + 'datapremis/uploaddata';
-		$.ajax({
-			type: 'POST',
-			url: alamat,
-			cache: false,
-			success: function (data) {
-				
-			}
-		});
-	}
 })

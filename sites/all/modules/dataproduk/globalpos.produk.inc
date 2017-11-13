@@ -34,10 +34,15 @@ function data_produk(){
     }else{
         $ServerData = base_path();
     }
+    $IdKategori = 0;
+    if (isset($_GET['idkategori']) && !empty($_GET['idkategori'])){
+        $IdKategori = $_GET['idkategori'];
+    }
 	drupal_add_js(
 		array(
 			'filePath'  => $filePath,
             'server' => $ServerData,
+            'idkategori' => $IdKategori,
 		),
 		'setting'
 	);
@@ -94,6 +99,21 @@ function data_produk(){
 		$pilihankategori2 .= '<option value="'.$data->idkategori.'">'.$data->kodekategori.'-'.$data->kategori.'</option>';
 	}
 	$pilihankategori2 .= '</select>';
+    $FilterKategori = '<select id="kategori-filter" name="kategori-filter">';
+    $result = db_query("SELECT idkategori,kodekategori,kategori FROM kategori ORDER BY kodekategori,kategori");
+    if ($IdKategori == 0){
+        $FilterKategori .= '<option value="0" selected>Seluruh Kategori</option>';
+    }else {
+        $FilterKategori .= '<option value="0">Seluruh Kategori</option>';
+    }
+    while ($data = db_fetch_object($result)){
+        if ($data->idkategori == $IdKategori){
+            $FilterKategori .= '<option value="' . $data->idkategori . '" selected>' . $data->kodekategori . '-' . $data->kategori . '</option>';
+        }else {
+            $FilterKategori .= '<option value="' . $data->idkategori . '">' . $data->kodekategori . '-' . $data->kategori . '</option>';
+        }
+    }
+    $FilterKategori .= '</select>';
 	//idsupplier,idkategori,idsubkategori,barcode,alt_code,namaproduct,hargapokok,hargajual,margin,minstok,maxstok,stok,satuan,berat,keterangan
 	$barcloseform = '<div id="formpenambahanproduk"><div id="barplace"><div id="barcloseform" onclick="tutupformtambahproduk();" title="Tutup form penambahan data produk">Tutup Form</div></div>';
 	$viewtabelproduk = $barcloseform.'<div id="formplace" class="produk"><form id="formproduk" action="'.base_path().'dataproduk/simpanproduk" method="post">';
@@ -168,6 +188,7 @@ function data_produk(){
     }else{
         $pilihanPelanggan = '';
     }
+    $viewtabelproduk .= $FilterKategori;
 	if (isset($_GET["statusstok"])){
 		$statusStok = $_GET["statusstok"];
 		drupal_add_js(

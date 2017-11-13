@@ -916,3 +916,7 @@ form.form-item-lined-up, .form-item-lined-up{
 .margin-bottom-10{
 	margin-bottom: 10px !important;
 }
+#katdiv{
+	float: left;
+	margin-left: 10px;
+}

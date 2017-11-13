@@ -138,7 +138,7 @@ function simpan_returnsupplier(){
                  $no_nota, $user->uid, $_POST["totalbelanja"], $waktuReturn, $caraReturn);
         $next_id = db_last_insert_id('returnsupplier', 'idreturn');
         print $_POST["detail_produk"];
-        if ($caraReturn = 2){
+        if ($caraReturn == 2){
             $variables = array();
             $variables['hutang'] = db_result(db_query("SELECT besarhutang FROM hutang WHERE idsupplier='%d'",$_POST['idsupplier']));
             $variables['pembayaran'] = $totalReturn;

@@ -22,7 +22,7 @@ function tampilkantabelproduk(){
         'bInfo': true,
         'processing': true,
         'serverSide': true,
-        'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=produk&statusstok='+ statusstok +'&status_product='+ statusproduct,
+        'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=produk&statusstok='+ statusstok +'&status_product='+ statusproduct +'&idkategori=' + Drupal.settings.idkategori,
         'aoColumns': [
             { 'bSortable': false },null,null,null,null,null,null,null,
             null,{ 'bVisible': false },{ 'bVisible': false },
@@ -37,7 +37,7 @@ function tampilkantabelproduk(){
                 columns: ':not(:first-child)'
             }, 'copy', 'excel', 'print'
         ],
-        'sDom': '<"button-div"B><"H"lfr>t<"F"ip>',
+        'sDom': '<"button-div"B><"H"l<"#katdiv">fr>t<"F"ip>',
         'createdRow': function ( row, data, index ) {
             row.id = data[(data.length - 1)];
             var alamatKategori = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=kategori&idproduk='+ row.id;
@@ -457,11 +457,24 @@ function editproduk(idproduk){
 }
 function view_status(kondisistok){
     if (kondisistok != 'all' && kondisistok != 'nonaktif') {
-        window.location = pathutama + 'dataproduk/produk?statusstok=' + kondisistok +'&server='+ $('#idpelanggan').val();
+        if ($('#idpelanggan').val()){
+            window.location = pathutama + 'dataproduk/produk?statusstok=' + kondisistok +'&server='+ $('#idpelanggan').val() +'&idkategori='+ $('#kategori-filter').val();
+        }else{
+            window.location = pathutama + 'dataproduk/produk?statusstok=' + kondisistok +'&idkategori='+ $('#kategori-filter').val();
+        }
+
     }else if(kondisistok == 'nonaktif'){
-        window.location = pathutama + 'dataproduk/produk?status_product=0&server='+ $('#idpelanggan').val();
+        if ($('#idpelanggan').val()){
+            window.location = pathutama + 'dataproduk/produk?status_product=0&server='+ $('#idpelanggan').val() +'&idkategori='+ $('#kategori-filter').val();
+        }else{
+            window.location = pathutama + 'dataproduk/produk?status_product=0&idkategori='+ $('#kategori-filter').val();
+        }
     }else{
-        window.location = pathutama + 'dataproduk/produk?server='+ $('#idpelanggan').val();
+        if ($('#idpelanggan').val()) {
+            window.location = pathutama + 'dataproduk/produk?server=' + $('#idpelanggan').val() +'&idkategori='+ $('#kategori-filter').val();
+        }else{
+            window.location = pathutama + 'dataproduk/produk?server=' + $('#idpelanggan').val() +'&idkategori='+ $('#kategori-filter').val();
+        }
     }
 }
 function save_produk(){
@@ -844,6 +857,14 @@ $(document).ready(function() {
                     tampilkantabelproduk();
                 }
             });
+        }
+    });
+    $('#katdiv').append($('#kategori-filter'));
+    $('#kategori-filter').on('change', function(){
+        if ($('#idpelanggan').val()){
+            window.location = pathutama + 'dataproduk/produk?statusstok=' + Drupal.settings.statusproduct +'&server='+ $('#idpelanggan').val() +'&idkategori='+ $(this).val();
+        }else{
+            window.location = pathutama + 'dataproduk/produk?statusstok=' + Drupal.settings.statusproduct +'&idkategori='+ $(this).val();
         }
     });
 })

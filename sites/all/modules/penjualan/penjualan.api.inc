@@ -70,7 +70,7 @@ function getDetailPenjualan($nidpenjualan = null){
 	if (!empty($nidpenjualan)){
 		$detailPenjualan = array();
 		$strSQL = "SELECT iddetail, idpenjualan, a.idproduct, jumlah, a.hargapokok, a.hargajual, 
-		a.diskon, b.namaproduct, b.satuan, b.barcode FROM detailpenjualan a LEFT JOIN product b
+		a.diskon, b.namaproduct, b.satuan, b.barcode, a.ppn FROM detailpenjualan a LEFT JOIN product b
 		ON a.idproduct = b.idproduct WHERE a.idpenjualan=%d";
 		$result = db_query($strSQL,$nidpenjualan);
 		while ($data = db_fetch_object($result)){
@@ -207,10 +207,10 @@ function printOutPenjualan(){
 			$tablePrint .= '<tr><td colspan="3" style="font-size: 14px;text-align: center;"><span style="float: left">Member</span><span style="float: right">'.$dataPenjualan['info']->namapelanggan.'&nbsp;&nbsp;</span></td></tr>';
 		}
 		$tablePrint .= '<tr><td colspan="3" style="font-size: 14px;text-align: center;border-bottom: 1px solid #000;"><span style="float: left">Tanggal</span><span style="float: right">'.$dataPenjualan['info']->tglpenjualan.'&nbsp;&nbsp;</span></td></tr>';
-		if (isset($dataPenjualan['laundry'])){
+		/*if (isset($dataPenjualan['laundry'])){
 			$tablePrint .= '<tr><td colspan="3" style="font-size: 12px;text-align: center;border-bottom: 1px solid #000;"><span style="float: left">MASUK : '.$dataPenjualan['laundry']['info']->tglpenjualan.'</span><span style="float: right">KASIR : '.$dataPenjualan['laundry']['info']->name.'&nbsp;&nbsp;</span></td></tr>';
 			$tablePrint .= '<tr><td colspan="3" style="font-size: 12px;text-align: center;border-bottom: 1px solid #000;"><span style="float: left">Status : AMBIL</span><span style="float: right">Bayar : '.$dataPenjualan['info']->carabayar.' '.$nilaiBayar.'&nbsp;&nbsp;</span></td></tr>';
-		}
+		}*/
 		$totalPenjualan = 0;
 		for ($i = 0;$i < count($dataPenjualan['detail']);$i++){
 			$dataDetail = $dataPenjualan['detail'][$i];
@@ -218,11 +218,12 @@ function printOutPenjualan(){
 			$tablePrint .= '<td colspan="3" style="font-size: 13px;font-weight: bold;">'.$dataDetail->namaproduct.'</td>';
 			$tablePrint .= '</tr>';
 			$tablePrint .= '<tr>';
-			$tablePrint .= '<td style="font-size: 13px;font-weight: bold;text-align: right;">'.number_format($dataDetail->hargajual,0,",",".").'</td>';
+			$HargaJual = ($dataDetail->hargajual - ($dataDetail->hargajual * $dataDetail->diskon/100)) + (($dataDetail->hargajual - ($dataDetail->hargajual * $dataDetail->diskon/100)) * $dataDetail->ppn/100);
+			$tablePrint .= '<td style="font-size: 13px;font-weight: bold;text-align: right;">'.number_format($HargaJual,0,",",".").'</td>';
 			$tablePrint .= '<td style="font-size: 13px;font-weight: bold;text-align: right;">x '.number_format($dataDetail->jumlah,0,",",".").'</td>';
-			$tablePrint .= '<td style="font-size: 13px;font-weight: bold;text-align: right;">'.number_format($dataDetail->hargajual*$dataDetail->jumlah,0,",",".").'&nbsp;&nbsp;</td>';
+			$tablePrint .= '<td style="font-size: 13px;font-weight: bold;text-align: right;">'.number_format($HargaJual*$dataDetail->jumlah,0,",",".").'&nbsp;&nbsp;</td>';
 			$tablePrint .= '</tr>';
-			$totalPenjualan = $totalPenjualan + ($dataDetail->hargajual*$dataDetail->jumlah);
+			$totalPenjualan = $totalPenjualan + ($HargaJual*$dataDetail->jumlah);
 		}
 		$tablePrint .= '<tr><td colspan="3" style="font-size: 13px;font-weight: bold;text-align: center;border-top: 1px solid #000;"><span style="float: left">TOTAL</span><span style="float: right">'.number_format($totalPenjualan,0,",",".").'&nbsp;&nbsp;</span></td></tr>';
 		$tablePrint .= '<tr><td colspan="3" style="font-size: 13px;font-weight: bold;text-align: center;"><span style="float: left">'.strtoupper($dataPenjualan['info']->carabayar).'</span><span style="float: right">'.number_format($dataPenjualan['info']->bayar,0,",",".").'&nbsp;&nbsp;</span></td></tr>';
@@ -663,6 +664,7 @@ function printCustomerOrderBarcodeNew($totalPrint = 1){
 		$detailOrders = getCustomerOrder($nidOrder);
 		if (isset($detailOrders['info']) && count($detailOrders['info'])) {
 			$dataOrder = $detailOrders['info'];
+            $counterData = 0;
 			for ($i = 0;$i < $totalPrint;$i++){
 				if ($counterData == 0){
 					$tablePrint .= '<table style="width: 190px;border-collapse: collapse;" >';
@@ -685,6 +687,7 @@ function printCustomerOrderBarcodeNew($totalPrint = 1){
 				$tablePrint .= '<tr class="small-font"><td align="center"><span class="pull-left">'.$splitTgl[0].'</span><span class="pull-right">Rp. ' . number_format($dataOrder->total,0,',','.') . '</span></td></tr>';
 				$tablePrint .= '</tbody>';
 				$tablePrint .= '</table>';
+                $counterData++;
 			}
 		}
 	}
@@ -856,6 +859,7 @@ function printLabelHarga(){
     $products = isset($_POST['selected-product-print']) ? $_POST['selected-product-print'] : null;
     $explodeProduct = explode('||',$products);
     $pathLogo = createLogoImagePath();
+    $tablePrint = '';
     if (!empty($explodeProduct) && count($explodeProduct)) {
         $printPage = 0;
         $productsData = array();
