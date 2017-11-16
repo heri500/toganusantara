@@ -13,7 +13,7 @@ var settings = {
 var statusstok = 0;
 var statusproduct = 1;
 var alamatServer = '';
-
+var SelectedProduct = 0;
 function tampilkantabelproduk(){
     oTable = $('#tabel_produk').DataTable( {
         'bJQueryUI': true,
@@ -26,7 +26,8 @@ function tampilkantabelproduk(){
         'aoColumns': [
             { 'bSortable': false },null,null,null,null,null,null,null,
             null,{ 'bVisible': false },{ 'bVisible': false },
-            { 'bVisible': false },null,null,null,{ 'bVisible': false },null,{ 'bSortable': false },{ 'bSortable': false }
+            { 'bVisible': false },null,null,null,{ 'bVisible': false },null,
+            { 'bSortable': false },{ 'bSortable': false },{ 'bSortable': false }
         ],
         'aLengthMenu': [[100, 200, 300, 500], [100, 200, 300,500]],
         'iDisplayLength': 100,
@@ -67,17 +68,22 @@ function tampilkantabelproduk(){
                 'tooltip': 'Klik untuk mengubah...'
             });
             var alamatsupplier = alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=supplier&idproduk='+ row.id;
-            $('td', row).eq(3).addClass('center').editable(alamatupdate, {
+            $('td', row).eq(3).addClass('left').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
                     return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 11 };
                 },
                 'loadurl' : alamatsupplier,
-                'width': '140px',
+                'width': '200px',
                 'height': '20px',
                 'submit': 'Ok',
-                'type': 'select',
+                'type': 'multiselect',
                 'indicator': 'Menyimpan...',
-                'tooltip': 'Klik untuk mengubah...'
+                'tooltip': 'Klik untuk mengubah...',
+                'onblur' : 'ignore',
+                'cancel' : 'Cancel'
+            }).click(function(){
+                $(this).find('select').chosen();
+                $('.chosen-container').css('width', '100%');
             });
             $('td', row).eq(4).addClass('center').editable(alamatupdate, {
                 'submitdata': function ( value, settings ) {
@@ -499,6 +505,41 @@ function export_to_xls(){
         }
     })
 }
+function edithargaproduk(idproduct){
+    if (idproduct){
+        SelectedProduct = idproduct;
+        $('#dialoghargasupplier').dialog('open');
+    }
+}
+function closehargasupplier(){
+    $('#dialoghargasupplier').dialog('close');
+}
+function simpanhargasupplier(){
+    var PostData = '';
+    $('.input-number').each(function(){
+        if (PostData == ''){
+            PostData = $(this).attr('id') + '_' + $(this).val();
+        }else{
+            PostData += '__' + $(this).attr('id') + '_' + $(this).val();
+        }
+    });
+    if (PostData != ''){
+        var request = new Object();
+        request.dataHarga = PostData;
+        request.idproduct = SelectedProduct;
+        var AlamatUpdateHarga = pathutama +'dataproduk/updatesupplierprice';
+        $.ajax({
+            type: 'POST',
+            url: AlamatUpdateHarga,
+            data: request,
+            cache: false,
+            success: function(){
+                alert('Data harga supplier berhasil diupdate...!!!');
+                $('#dialoghargasupplier').dialog('close');
+            }
+        });
+    }
+}
 $(document).ready(function() {
     pathutama = Drupal.settings.basePath;
     pathfile = Drupal.settings.filePath;
@@ -558,6 +599,30 @@ $(document).ready(function() {
             $('#tambahsatuanform').validationEngine('hide');
         }
     });
+    $('#dialoghargasupplier').dialog({
+        modal: false,
+        width: 450,
+        resizable: false,
+        autoOpen: false,
+        open : function(event, ui){
+            $('.ui-dialog-title').css('font-size','14px');
+            $('#dialoghargasupplier .ui-button').css('font-size','12px').css('font-weight','bold');
+            $('#dialoghargasupplier').css('padding','.5em .1em');
+            var request = new Object();
+            request.idproduct = SelectedProduct;
+            alamattabelproduk = pathutama +'dataproduk/getsupplierprice';
+            $.ajax({
+                type: 'POST',
+                url: alamattabelproduk,
+                data: request,
+                cache: false,
+                success: function(data){
+                    $('#table-harga-wrapper').html(data.trim());
+                    $('.input-number:first').select();
+                }
+            });
+        }
+    });
     /*TableToolsInit.sSwfPath = pathutama +'misc/media/datatables/swf/ZeroClipboard.swf';*/
 
     $('#formsubkategori').validationEngine();
@@ -604,6 +669,10 @@ $(document).ready(function() {
                 success: function(data){
                     $('#barcode').val(data.trim());
                     $('#barcode').select();
+                    $('#idsupplier').chosen();
+                    $('.chosen-container').css('float', 'left');
+                    $('.chosen-container').css('margin-right', '4px');
+                    $('.chosen-container').css('margin-top', '4px');
                 }
             });
         });

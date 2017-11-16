@@ -206,7 +206,10 @@ function cari_produk_pembelian(){
 	if ($_POST["katacari"]){
 		$KATACARI = '%'.$_POST["katacari"].'%';
 		if ($_GET["idsupplier"]){
-			$result = db_query("SELECT idproduct,namaproduct,hargapokok,stok FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND idsupplier='%d'",$KATACARI,$KATACARI,$KATACARI,$_GET["idsupplier"]);
+            $StrSql = "SELECT prod.idproduct, prod.barcode, prod.namaproduct, ps.harga AS hargapokok, prod.stok FROM product_supplier AS ps ";
+            $StrSql .= "LEFT JOIN product AS prod ON ps.idproduct = prod.idproduct ";
+            $StrSql .= "WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND ps.idsupplier=%d ";
+			$result = db_query($StrSql,$KATACARI,$KATACARI,$KATACARI,$_GET["idsupplier"]);
 		}else{
 			$result = db_query("SELECT idproduct,namaproduct,hargapokok,stok FROM product WHERE alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s'",$KATACARI,$KATACARI,$KATACARI);
 		}
@@ -223,7 +226,11 @@ function cari_barang_pembelian(){
 	if ($_GET["term"]){
 		$KATACARI = '%'.$_GET["term"].'%';
 		if (isset($_GET["idsupplier"]) && !empty($_GET["idsupplier"]) && $_GET["idsupplier"] != 'null'){
-			$result = db_query("SELECT barcode, namaproduct FROM product WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND idsupplier='%d' LIMIT 50",$KATACARI,$KATACARI,$KATACARI,$_GET["idsupplier"]);
+		    $StrSql = "SELECT prod.barcode, prod.namaproduct FROM product_supplier AS ps ";
+            $StrSql .= "LEFT JOIN product AS prod ON ps.idproduct = prod.idproduct ";
+            $StrSql .= "WHERE (alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s') AND ps.idsupplier=%d ";
+            $StrSql .= "LIMIT 50 ";
+			$result = db_query($StrSql,$KATACARI,$KATACARI,$KATACARI,$_GET["idsupplier"]);
 		}else{
 			$result = db_query("SELECT barcode, namaproduct FROM product WHERE alt_code LIKE '%s' OR barcode LIKE '%s' OR UPPER(namaproduct) LIKE '%s' LIMIT 50",$KATACARI,$KATACARI,$KATACARI);
 		}

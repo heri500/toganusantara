@@ -137,6 +137,15 @@ function pembelian_menu()
         'type' => MENU_CALLBACK,
         'file' => 'pembelian.update.inc'
     );
+    $items['pembelian/deletereturnsupplier'] = array(
+        'title' => t('Delete Return Supplier'),
+        'description' => 'Delete return supplier',
+        'page callback' => 'delete_return_supplier',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pembelian Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'pembelian.delete.inc'
+    );
     return $items;
 } // end hook menu
 

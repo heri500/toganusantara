@@ -128,8 +128,7 @@ function simpan_returnsupplier(){
             $next_id = 1;
         }
         $no_nota = buat_nota($next_id);
-        $totalReturn = $_POST['bayar'];
-        $kembali = $_POST['bayar'] - $_POST['totalbelanja'];
+        $totalReturn = $_POST["totalbelanja"];
         date_default_timezone_set('Asia/Jakarta');
         $waktuReturn = $_POST['tglreturn'].' '.date('H:i:s');
         $caraReturn = $_POST['carareturn'];
@@ -149,7 +148,6 @@ function simpan_returnsupplier(){
             do_pembayaran_hutang($variables);
         }
         $pecahdetail = explode("&",$_POST["detail_produk"]);
-        $totalmodal = 0;
         foreach ($pecahdetail as $parameter){
             $pecahparameter = explode("=",$parameter);
             $pecahnilai = explode("___",remove_utf8_bom($pecahparameter[1]));

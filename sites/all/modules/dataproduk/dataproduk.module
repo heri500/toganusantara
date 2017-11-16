@@ -155,6 +155,15 @@ function dataproduk_menu() {
 		'type' => MENU_CALLBACK,
 		'file' => 'globalpos.produk.inc'
 	);
+    $items['dataproduk/updatesupplierprice'] = array(
+        'title' => t('Update supplier price'),
+        'description' => 'Update supplier price',
+        'page callback' => 'ubah_supplier_price',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.produk.inc'
+    );
 	$items['dataproduk/exportxls'] = array(
 		'title' => t('Export to xls'),
 		'description' => 'Export data product to xls',
@@ -175,6 +184,14 @@ function dataproduk_menu() {
         'title' => t('Get product by kategori'),
         'description' => 'Get product by kategori',
         'page callback' => 'get_data_product_by_kategori_ajax',
+        'access callback' => 'user_access',
+        'access arguments' => array('Akses Data Produk'),
+        'type' => MENU_CALLBACK,
+    );
+    $items['dataproduk/getsupplierprice'] = array(
+        'title' => t('Get product price by supplier'),
+        'description' => 'Get product price by supplier',
+        'page callback' => 'get_product_supplier_price',
         'access callback' => 'user_access',
         'access arguments' => array('Akses Data Produk'),
         'type' => MENU_CALLBACK,
@@ -517,4 +534,68 @@ function get_diskon_product($IdPelanggan = null, $IdProduct = null){
         }
     }
     return $DiskonProduct;
+}
+function generate_product_supplier(){
+    global $user;
+    $StrSql = 'SELECT idproduct, idsupplier, hargapokok FROM product WHERE idsupplier IS NOT NULL';
+    $result = db_query($StrSql);
+    $InsertedProduct = array();
+    while ($Data = db_fetch_object($result)){
+        $IdProduct = $Data->idproduct;
+        $IdSupplier = $Data->idsupplier;
+        $HargaPokok = $Data->hargapokok;
+        $StrSqlExists = 'SELECT COUNT(*) FROM product_supplier WHERE idproduct=%d AND idsupplier=%d';
+        $ProductSupplierExists = db_result(db_query($StrSqlExists, $IdProduct, $IdSupplier));
+        if (empty($ProductSupplierExists)){
+            $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+            $StrSql .= "VALUES (%d, %d, '%f', %d)";
+            db_query($StrSql, $IdProduct, $IdSupplier,$HargaPokok, $user->uid);
+            $InsertedProduct[] = $Data;
+        }
+    }
+    return $InsertedProduct;
+}
+
+function get_product_supplier_price(){
+    $Output = '';
+    if (isset($_POST['idproduct']) && !empty($_POST['idproduct'])){
+        $IdProduct = $_POST['idproduct'];
+        $StrSql = 'SELECT ps.idsupplier, supp.namasupplier, prod.namaproduct, ps.harga FROM product_supplier AS ps ';
+        $StrSql .= 'LEFT JOIN product AS prod ';
+        $StrSql .= 'ON ps.idproduct = prod.idproduct ';
+        $StrSql .= 'LEFT JOIN supplier AS supp ON ps.idsupplier = supp.idsupplier ';
+        $StrSql .= 'WHERE ps.idproduct=%d';
+        $Result = db_query($StrSql,$IdProduct);
+        $DataHarga = array();
+        while ($data = db_fetch_object($Result)){
+            $DataHarga[] = $data;
+        }
+        if (count($DataHarga)){
+            $TableHeader = array();
+            $TableHeader[] = array(
+                'data' => 'Nama Supplier'
+            );
+            $TableHeader[] = array(
+                'data' => 'Harga Beli',
+                'class' => 'col-angka',
+            );
+            $Rows = array();
+            for ($i = 0;$i < count($DataHarga);$i++){
+                $IdSupplier = $DataHarga[$i]->idsupplier;
+                $Harga = $DataHarga[$i]->harga;
+                $RowData = array();
+                $RowData[] = array('data' => $DataHarga[$i]->namasupplier);
+                $InputHarga = '<input class="input-number" type="text" id="harga-'.$IdProduct.'-'.$IdSupplier.'" name="harga-'.$IdProduct.'-'.$IdSupplier.'" value="'.$Harga.'">';
+                $RowData[] = array('data' => $InputHarga);
+                $Rows[] = $RowData;
+            }
+            $TableAttributes = array('id' => 'table-harga-'.$IdProduct, 'class' => 'table-harga');
+            $Output = theme('table', $TableHeader, $Rows, $TableAttributes);
+        }
+    }
+    print $Output;
+    exit();
+}
+function save_harga_supplier(){
+
 }

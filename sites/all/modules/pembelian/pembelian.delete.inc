@@ -84,3 +84,38 @@ function delete_detail_pembelian_ajax(){
     print json_encode(delete_detail_pembelian($_POST['iddetail'],$_POST['idpembelian']));
     exit();
 }
+function delete_return_supplier($IdReturn = null){
+    if (!empty($IdReturn)){
+        $IdCaraReturn = db_result(db_query('SELECT carareturn FROM returnsupplier WHERE idreturn=%d', $IdReturn));
+        $TotalReturn = db_result(db_query('SELECT total FROM returnsupplier WHERE idreturn=%d', $IdReturn));
+        $IdSupplier = db_result(db_query('SELECT idsupplier FROM returnsupplier WHERE idreturn=%d', $IdReturn));
+        $WaktuReturn = db_result(db_query('SELECT tglreturn FROM returnsupplier WHERE idreturn=%d', $IdReturn));
+        if ($IdCaraReturn == 2){
+            $variables = array();
+            $variables['hutang'] = db_result(db_query("SELECT besarhutang FROM hutang WHERE idsupplier='%d'",$IdSupplier));
+            $variables['pembayaran'] = -1 * $TotalReturn;
+            $variables['idsupplier'] = $IdSupplier;
+            $variables['tglbayar'] = $WaktuReturn;
+            $variables['keterangan'] = 'Penghapusan Return supplier potong hutang';
+            $variables['simpanpembayaran'] = true;
+            do_pembayaran_hutang($variables);
+        }
+        $StrSql = 'SELECT idreturn, idproduct, jumlah, hargapokok, hargapokoksebelumnya, ';
+        $StrSql .= 'perubahan FROM detailreturn WHERE idreturn=%d';
+        $RecDetail = db_query($StrSql, $IdReturn);
+        while ($DetailRet = db_fetch_object($RecDetail)){
+            $StokSebelum = db_query('SELECT stok FROM product WHERE idproduct=%d', $DetailRet->idproduct);
+            $StockSekarang = $StokSebelum + $DetailRet->jumlah;
+            db_query("UPDATE product SET stok='%f' WHERE idproduct='%d'",$StockSekarang,$DetailRet->idproduct);
+            $Keterangan = 'Penghapusan Return ke supplier';
+            db_query("INSERT INTO transaksistock (idproduk, idreturn, stocksebelum, masuk, stocksetelah, 
+            keterangan) VALUES ('%d', '%d', '%f', '%f', '%f', '%s')",$DetailRet->idproduct,
+            $IdReturn,$StokSebelum, $DetailRet->jumlah,$StockSekarang,$Keterangan);
+        }
+        $StrSql = 'DELETE FROM detailreturn WHERE idreturn=%d';
+        db_query($StrSql, $IdReturn);
+        $StrSql = 'DELETE FROM returnsupplier WHERE idreturn=%d';
+        db_query($StrSql, $IdReturn);
+    }
+    drupal_goto($_GET['destination']);
+}

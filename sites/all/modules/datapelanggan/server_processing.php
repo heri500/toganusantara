@@ -131,20 +131,23 @@ function serverSideProduk($request){
 	}
 	$firstRecord = $pageStart;
 	$lastRecord = $pageStart + $pageLength;
-	$strSQL = "SELECT prod.idproduct,prod.idsupplier,prod.idkategori,prod.idsubkategori,prod.barcode,prod.alt_code,";
+	$strSQL = "SELECT prod.idproduct,prod.idkategori,prod.idsubkategori,prod.barcode,prod.alt_code,";
 	$strSQL .= "prod.namaproduct,prod.hargapokok,prod.hargajual,prod.margin,prod.minstok,prod.maxstok,";
 	$strSQL .= "prod.stok,prod.satuan,prod.berat,prod.keterangan ,";
-	$strSQLFilteredTotal = "SELECT COUNT(prod.idproduct) ";
-	$strSQL .= "kat.kategori, subkat.subkategori, supp.namasupplier, prod.stok*prod.hargajual AS total_nilai  ";
+	$strSQL .= "kat.kategori, subkat.subkategori, prod.stok*prod.hargajual AS total_nilai, ";
+    $strSQL .= "(SELECT GROUP_CONCAT(namasupplier SEPARATOR '<br/>') FROM product_supplier ";
+    $strSQL .= "AS ps LEFT JOIN supplier supp ON ps.idsupplier = supp.idsupplier ";
+    $strSQL .= "WHERE ps.idproduct = prod.idproduct GROUP BY ps.idproduct) AS namasupplier ";
 	$strSQL .= "FROM product AS prod ";
-	$strSQLFilteredTotal .= "FROM product AS prod ";
-	$strSQL .= "LEFT JOIN kategori AS kat ON kat.idkategori = prod.idkategori ";
+    $strSQL .= "LEFT JOIN kategori AS kat ON kat.idkategori = prod.idkategori ";
 	$strSQL .= "LEFT JOIN subkategori AS subkat ON subkat.idsubkategori = prod.idsubkategori ";
-	$strSQL .= "LEFT JOIN supplier AS supp ON supp.idsupplier = prod.idsupplier ";
+	//$strSQL .= "LEFT JOIN supplier AS supp ON supp.idsupplier = prod.idsupplier ";
 	$strSQL .= "WHERE 1=1 ";
-	$strSQLFilteredTotal .= "LEFT JOIN kategori AS kat ON kat.idkategori = prod.idkategori ";
+    $strSQLFilteredTotal = "SELECT COUNT(prod.idproduct) ";
+    $strSQLFilteredTotal .= "FROM product AS prod ";
+    $strSQLFilteredTotal .= "LEFT JOIN kategori AS kat ON kat.idkategori = prod.idkategori ";
 	$strSQLFilteredTotal .= "LEFT JOIN subkategori AS subkat ON subkat.idsubkategori = prod.idsubkategori ";
-	$strSQLFilteredTotal .= "LEFT JOIN supplier AS supp ON supp.idsupplier = prod.idsupplier ";
+	//$strSQLFilteredTotal .= "LEFT JOIN supplier AS supp ON supp.idsupplier = prod.idsupplier ";
 	$strSQLFilteredTotal .= "WHERE 1=1 ";
 	$strCriteria = "";
 	if (!empty($searchQuery)){
@@ -152,7 +155,7 @@ function serverSideProduk($request){
 		$strCriteria .= "OR prod.namaproduct LIKE '%%%s%%' OR kat.kategori LIKE '%%%s%%' ";
 		$strCriteria .= "OR kat.kodekategori LIKE '%%%s%%' OR subkat.subkategori LIKE '%%%s%%' ";
 		$strCriteria .= "OR subkat.kodesubkategori LIKE '%%%s%%' OR supp.namasupplier LIKE '%%%s%%' ";
-		$strCriteria .= "OR supp.kodesupplier LIKE '%%%s%%' ";
+		//$strCriteria .= "OR supp.kodesupplier LIKE '%%%s%%' ";
 		$strCriteria .= ") ";
 	}
 	if (isset($_REQUEST['statusstok']) && $_REQUEST['statusstok'] != '0'){
@@ -201,9 +204,9 @@ function serverSideProduk($request){
 		$rowData[] = number_format($data->hargajual,0,",",".");
 		$rowData[] = number_format($data->margin,0,",",".");
 		$rowData[] = $data->minstok;
-    $rowData[] = $data->maxstok;
-    $rowData[] = number_format($data->stok,2,",",".");
-    if ($data->stok < $data->minstok){
+        $rowData[] = $data->maxstok;
+        $rowData[] = number_format($data->stok,2,",",".");
+        if ($data->stok < $data->minstok){
 			$rowData[] = "<img title=\"Stok dibawah minimum\" src=\"$baseDirectory/misc/media/images/statusmerah.png\">";
 		}elseif ($data->stok > $data->maxstok){
 			$rowData[] = "<img title=\"Stok berlebihan/diatas maksimum stok\" src=\"$baseDirectory/misc/media/images/statuskuning.png\">";
@@ -217,7 +220,9 @@ function serverSideProduk($request){
 		$rowData[] = number_format($data->total_nilai,0,",",".");
 		$rowData[] = '<input type="text" id="print-'.$data->idproduct.'" name="print-'.$data->idproduct.'" class="total-print" value="'.$data->stok.'" size="2">';
 		$rowData[] = '<input class="barcode-select" type="checkbox" id="check-'.$data->idproduct.'" name="check-'.$data->idproduct.'" value="'.$data->idproduct.'">';
+        $imgHargaSupp = "<img width=\"20\" title=\"Edit Harga Produk ".$data->namaproduct." per supplier\" src=\"$baseDirectory/misc/media/images/document.ico\" onclick=\"edithargaproduk(".$data->idproduct.")\">";
 		$totalNilaiBarang = $totalNilaiBarang + $data->total_nilai;
+        $rowData[] = $imgHargaSupp;
 		$rowData[] = $data->idproduct;
 		$output[] = $rowData;
 	}
@@ -1251,11 +1256,15 @@ function serverSideArraySupplier($request){
     $result = db_query($strSQL);
     $output = array();
     while($data = db_fetch_object($result)){
-        $output[$data->idsupplier] = $data->kodesupplier.' => '.$data->namasupplier;
+        $output[$data->idsupplier] = $data->namasupplier;
     }
-    $strSQL = 'SELECT idsupplier FROM product WHERE idproduct=%d';
-    $idSupplier = db_result(db_query($strSQL, $request['idproduk']));
-    $output['selected'] =  $idSupplier;
+    $strSQL = 'SELECT idsupplier FROM product_supplier WHERE idproduct=%d';
+    $result = db_query($strSQL, $request['idproduk']);
+    $SelectedSupplier = array();
+    while ($data = db_fetch_object($result)){
+        $SelectedSupplier[$data->idsupplier] = $data->idsupplier;
+    }
+    $output['selected'] = $SelectedSupplier;
     return $output;
 }
 function serverSideArraySatuan($request){

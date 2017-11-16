@@ -389,4 +389,8 @@ $(document).ready(function() {
 			}
 		});
 	});
+    $('#idsupplier').chosen();
+    $('.chosen-container').css('float', 'left');
+    $('.chosen-container').css('margin-right', '4px');
+    $('.chosen-container').css('margin-top', '4px');
 })

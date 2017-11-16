@@ -22,11 +22,12 @@ function data_produk(){
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.html5.js');
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.print.js');
   	drupal_add_js('misc/media/datatables.1.10/extensions/Buttons/js/buttons.colVis.min.js');
-	drupal_add_js('misc/media/jquery.jeditable.js');
+    _addJeditablePlugins();
 	drupal_add_js('misc/media/jquery.autotab-1.1b.js');
     drupal_add_js('sites/all/libraries/barcode/jquery-barcode.min.js');
 	drupal_add_js('sites/all/libraries/uploadify/jquery.uploadify.v2.1.0.min.js');
 	drupal_add_js('sites/all/libraries/uploadify/swfobject.js');
+    _addChosenJqueryPlugins();
 	$filePath = base_path().file_directory_path();
 	if (isset($_GET['server']) && !empty($_GET['server'])){
         $DataPelanggan = get_pelanggan_data($_GET['server']);
@@ -74,7 +75,7 @@ function data_produk(){
 	$buttonadd2 = '<img id="addsubkategori" title="Tambah Subkategori Baru" src="'.base_path().'misc/media/images/add-small.ico">';
 	//Pilihan Supplier
 	$result = db_query("SELECT idsupplier,kodesupplier,namasupplier FROM supplier ORDER BY kodesupplier,namasupplier");
-	$pilihansupplier = '<select id="idsupplier" name="idsupplier" >';
+	$pilihansupplier = '<select id="idsupplier" name="idsupplier" multiple="true">';
 	while ($data = db_fetch_object($result)){
 		$pilihansupplier .= '<option value="'.$data->idsupplier.'">'.$data->kodesupplier.'-'.$data->namasupplier.'</option>';
 	}
@@ -184,7 +185,7 @@ function data_produk(){
 	}
 	$IdPelanggan = isset($_GET['server']) ? $_GET['server'] : 0;
 	if ($_SERVER[HTTP_HOST] == 'toganusantara.dev' || $_SERVER[HTTP_HOST] == 'pusat.toganusantara.com') {
-        $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection($IdPelanggan, 'PILIH SERVER', false).'</div>';
+        $pilihanPelanggan = '<div class="margin-bottom-10" style="float:left;width: 100%;">'.createPelangganSelection($IdPelanggan, 'PILIH SERVER', false).'</div>';
     }else{
         $pilihanPelanggan = '';
     }
@@ -238,6 +239,13 @@ function data_produk(){
 	$viewtabelproduk .= '<textarea id="selected-product-print" name="selected-product-print"></textarea>';
 	$viewtabelproduk .= '<input type="hidden" id="sticker-type" name="sticker-type" value="0">';
 	$viewtabelproduk .= '</form>';
+    $viewtabelproduk .= '<div id="dialoghargasupplier" title="HARGA PRODUK/SUPPLIER">';
+    $viewtabelproduk .= '<div id="table-harga-wrapper"></div>';
+    $viewtabelproduk .= '<div>';
+    $viewtabelproduk .= '<button id="simpanhargasupplier" onclick="simpanhargasupplier();">Simpan Harga Supplier</button>&nbsp;';
+    $viewtabelproduk .= '<button id="closehargasupplier" onclick="closehargasupplier();">Close</button>';
+    $viewtabelproduk .= '</div>';
+    $viewtabelproduk .= '</div>';
 	return $viewtabelproduk;
 }
 function cek_kode_alt($kodealt = null){
@@ -298,6 +306,7 @@ function tabel_produk($statusstok = null, $statusProduct = 1){
 	$tabelproduk .= '<th>TOTAL(Rp.)</th>';
 	$tabelproduk .= '<th class="tablebutton"></th>';
 	$tabelproduk .= '<th class="tablebutton"></th>';
+    $tabelproduk .= '<th class="tablebutton"></th>';
 	$tabelproduk .= '</tr>';
 	$tabelproduk .= '</thead>';
 	$tabelproduk .= '<tbody>';
@@ -309,6 +318,7 @@ function tabel_produk($statusstok = null, $statusProduct = 1){
 	$tabelproduk .= '<th class="right"><strong><div id="total-nilai-barang">Rp. '.number_format($totalNilaiBarang,2,',','.').'</div></strong></th>';
 	$tabelproduk .= '<th class="tablebutton"></th>';
 	$tabelproduk .= '<th class="tablebutton"></th>';
+    $tabelproduk .= '<th class="tablebutton"></th>';
 	$tabelproduk .= '</tr>';
 	$tabelproduk .= '</tfoot>';
 	$tabelproduk .= '</table>';
@@ -380,6 +390,7 @@ function simpan_produk(){
 			$data = db_fetch_object($result);
 			$STOKSEBELUM = $data->stok;
 			$HARGAPOKOK = $data->hargapokok;
+            $Supplier = $_REQUEST["idsupplier"];
 			if (!($data->idkategori == $_POST["idkategori"] AND $data->idsubkategori == $_POST["idsubkategori"])){
 				$resultkategori = db_query("SELECT kodekategori FROM kategori WHERE idkategori='%d'",$_POST["idkategori"]);
 				$datakategori = db_fetch_object($resultkategori);
@@ -393,12 +404,12 @@ function simpan_produk(){
 				}
 				//$sql = "UPDATE product SET idsupplier='%d',idkategori='%d',idsubkategori='%d',barcode='%s',alt_code='%s',namaproduct='%s',hargapokok='%f',hargajual='%f',margin='%f',minstok='%f',maxstok='%f',stok='%f',satuan='%s',keterangan='%s' WHERE idproduct='%d'";
 				//$nilai = $_POST["idsupplier"].'-'.$_POST["idkategori"].'-'.$_POST["idsubkategori"].'-'.$_POST["barcode"].'-'.$kodealternatif.'-'.$_POST["namaproduk"].'-'.$_POST["hargapokok"].'-'.$_POST["hargajual"].'-'.$_POST["margin"].'-'.$_POST["minstok"].'-'.$_POST["maxstok"].'-'.$_POST["stok"].'-'.$_POST["satuan"].'-'.$_POST["keterangan"].'-'.$_POST["idproduk"];
-				db_query("UPDATE product SET idsupplier='%d',idkategori='%d',idsubkategori='%d',
+				db_query("UPDATE product SET idkategori='%d',idsubkategori='%d',
 				barcode='%s',alt_code='%s',namaproduct='%s',hargapokok='%f',hargajual='%f',
 				margin='%f',minstok='%f',maxstok='%f',stok='%f',satuan='%s',keterangan='%s',
 				type_product='%d', lead_time='%d', aturan_jam_kerja='%d',
 				berlaku_sebelum_zuhur='%d',uploaded=0, changed=1  WHERE idproduct='%d'",
-				$_POST["idsupplier"],$_POST["idkategori"],$_POST["idsubkategori"],
+				$_POST["idkategori"],$_POST["idsubkategori"],
 				$_POST["barcode"],$kodealternatif,$_POST["namaproduk"],$_POST["hargapokok"],
 				$_POST["hargajual"],$_POST["margin"],$_POST["minstok"],$_POST["maxstok"],
 				$_POST["stok"],$_POST["satuan"],$_POST["keterangan"],$_POST["type_product"],
@@ -410,14 +421,21 @@ function simpan_produk(){
 					db_query("INSERT INTO historyhargabeli (hargasebelum, hargasesudah, uid) VALUES('%f','%f','%d')",
 					$HARGAPOKOK,$_POST["hargapokok"],$user->uid);
 				}
+				db_query('DELETE FROM product_supplier WHERE idproduct=%d', $_POST["idproduk"]);
+				for ($i = 0;$i < count($Supplier);$i++){
+                    $IdSupplier = $Supplier[$i];
+                    $HargaPokok = $_POST["hargapokok"];
+                    $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+                    $StrSql .= "VALUES (%d, %d, '%f', %d)";
+                    db_query($StrSql, $_POST["idproduk"], $IdSupplier,$HargaPokok, $user->uid);
+                }
 			}else{
-				db_query("UPDATE product SET idsupplier='%d',barcode='%s',
+				db_query("UPDATE product SET barcode='%s',
 				namaproduct='%s',hargapokok='%f',hargajual='%f',margin='%f',
 				minstok='%f',maxstok='%f',stok='%f',satuan='%s',keterangan='%s',
 				idkategori='%d', type_product='%d',lead_time='%d', aturan_jam_kerja='%d',
 				berlaku_sebelum_zuhur='%d',uploaded=0, changed=1 WHERE idproduct='%d'",
-				$_POST["idsupplier"],$_POST["barcode"],
-				$_POST["namaproduk"],$_POST["hargapokok"],$_POST["hargajual"],
+				$_POST["barcode"],$_POST["namaproduk"],$_POST["hargapokok"],$_POST["hargajual"],
 				$_POST["margin"],$_POST["minstok"],$_POST["maxstok"],$_POST["stok"],
 				$_POST["satuan"],$_POST["keterangan"],$_POST["idkategori"],$_POST["type_product"],
 				$_POST["lead_time"],$_POST["jam_kerja"],$_POST["sebelum_zuhur"],
@@ -427,6 +445,14 @@ function simpan_produk(){
 					db_query("INSERT INTO historyhargabeli (hargasebelum, hargasesudah, uid) VALUES('%f','%f','%d')",
 					$HARGAPOKOK,$_POST["hargapokok"],$user->uid);
 				}
+                db_query('DELETE FROM product_supplier WHERE idproduct=%d', $_POST["idproduk"]);
+                for ($i = 0;$i < count($Supplier);$i++){
+                    $IdSupplier = $Supplier[$i];
+                    $HargaPokok = $_POST["hargapokok"];
+                    $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+                    $StrSql .= "VALUES (%d, %d, '%f', %d)";
+                    db_query($StrSql, $_POST["idproduk"], $IdSupplier,$HargaPokok, $user->uid);
+                }
 			}
 			if ($_POST["type_product"] == 0) {
 				$SELISIHSTOK = ($_POST["stok"] * 1) - $STOKSEBELUM;
@@ -459,13 +485,13 @@ function simpan_produk(){
 		}
 	}else{
 		if (isset($_POST["barcode"]) AND isset($_POST["namaproduk"])){
-			db_query("INSERT INTO product(idsupplier,idkategori,idsubkategori,barcode,
+		    $Supplier = $_REQUEST["idsupplier"];
+			db_query("INSERT INTO product(idkategori,idsubkategori,barcode,
 			alt_code,namaproduct,hargapokok,hargajual,margin,minstok,maxstok,stok,satuan,
 			keterangan,type_product,lead_time, aturan_jam_kerja,berlaku_sebelum_zuhur)
-			VALUES(
-			'%d','%d','%d','%s','%s',
+			VALUES('%d','%d','%s','%s',
 			'%s','%f','%f','%f','%d','%d','%d','%s','%s','%d','%d','%d','%d')",
-			$_POST["idsupplier"],$_POST["idkategori"],$_POST["idsubkategori"],
+			$_POST["idkategori"],$_POST["idsubkategori"],
 			$_POST["barcode"],$altCode,$_POST["namaproduk"],$_POST["hargapokok"],
 			$_POST["hargajual"],$_POST["margin"],$_POST["minstok"],$_POST["maxstok"],
 			$_POST["stok"],$_POST["satuan"],$_POST["keterangan"],$_POST["type_product"],
@@ -473,6 +499,13 @@ function simpan_produk(){
 			$result = db_query("SELECT idproduct FROM product WHERE alt_code='%s'",$_POST["alt_code"]);
 			$data = db_fetch_object($result);
 			$IDPRODUK = $data->idproduct;
+			for ($i = 0;$i < count($Supplier);$i++){
+                $IdSupplier = $Supplier[$i];
+                $HargaPokok = $_POST["hargapokok"];
+                $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+                $StrSql .= "VALUES (%d, %d, '%f', %d)";
+                db_query($StrSql, $IDPRODUK, $IdSupplier,$HargaPokok, $user->uid);
+            }
 			if ($_POST["type_product"] == 0) {
 				$KETERANGAN = 'Inisialisasi Stock';
 				db_query("INSERT INTO transaksistock (idproduk, stocksebelum,
@@ -562,7 +595,7 @@ function update_subkategori(){
 }
 
 function edit_data_produk(){
-	if ($_GET["idproduk"]){
+	if (isset($_GET["idproduk"]) && !empty($_GET['idproduk'])){
 		$IDPRODUK = $_GET["idproduk"];
 		$resultproduk = db_query("SELECT idsupplier, idkategori, idsubkategori, barcode, 
 		alt_code, namaproduct, hargapokok, hargajual, margin, minstok, maxstok, stok, satuan,
@@ -580,6 +613,7 @@ function edit_data_produk(){
 		drupal_add_js('misc/media/jquery.validationEngine.js');
 		drupal_add_js('misc/media/jquery-ui-1.8.custom.min.js');
 		drupal_add_js('misc/media/jquery.autotab-1.1b.js');
+        _add_chosen_jquery_plugins_old();
 		$filePath = base_path().file_directory_path();
 		$idSubKategori = $dataproduk->idsubkategori;
 		drupal_add_js(
@@ -607,10 +641,16 @@ function edit_data_produk(){
 		$pilihansubkategori .= '</select>';
 		$buttonadd2 = '<img id="addsubkategori" title="Tambah Subkategori Baru" src="'.base_path().'misc/media/images/add-small.ico">';
 		//Pilihan Supplier
-		$result = db_query("SELECT idsupplier,kodesupplier,namasupplier FROM supplier ORDER BY kodesupplier,namasupplier");
-		$pilihansupplier = '<select id="idsupplier" name="idsupplier" >';
+        $StrSQL = 'SELECT idsupplier FROM product_supplier WHERE idproduct=%d';
+        $result = db_query($StrSQL, $IDPRODUK);
+        $SelectedSupplier = array();
+        while ($data = db_fetch_object($result)){
+            $SelectedSupplier[] = $data->idsupplier;
+        }
+        $result = db_query("SELECT idsupplier,kodesupplier,namasupplier FROM supplier ORDER BY kodesupplier,namasupplier");
+		$pilihansupplier = '<select id="idsupplier" name="idsupplier" multiple="true" >';
 		while ($data = db_fetch_object($result)){
-			if ($data->idsupplier == $dataproduk->idsupplier){
+			if (in_array($data->idsupplier, $SelectedSupplier)){
 				$pilihansupplier .= '<option selected value="'.$data->idsupplier.'">'.$data->kodesupplier.'-'.$data->namasupplier.'</option>';
 			}else{
 				$pilihansupplier .= '<option value="'.$data->idsupplier.'">'.$data->kodesupplier.'-'.$data->namasupplier.'</option>';
@@ -706,7 +746,8 @@ function edit_data_produk(){
 }
 
 function update_data_produk(){
-	$nilai = $_POST['value'];
+    global $user;
+    $nilai = $_REQUEST['value'];
 	$kolom = $_POST['kol_id'];
 	$productId = $_POST['row_id'];
 	$result = db_query("SELECT stok,hargapokok,hargajual FROM product WHERE idproduct='%d'",$productId);
@@ -782,10 +823,22 @@ function update_data_produk(){
 		}
 		$nilaiRet = $nilai;
 	}else if ($kolom == "11") {
-        $sql_update = "UPDATE product SET idsupplier='%d' WHERE idproduct='%d'";
-        $nilaiRet = db_result(db_query('SELECT namasupplier FROM supplier WHERE idsupplier=%d',$nilai));
+	    db_query('DELETE FROM product_supplier WHERE idproduct=%d',$productId);
+        for ($i = 0;$i < count($nilai);$i++){
+            $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+            $StrSql .= "VALUES (%d, %d, '%f', %d)";
+            db_query($StrSql, $productId, $nilai[$i],$hargaPokok,$user->uid);
+
+        }
+        $sql_update = null;
+        $StrSQL = "SELECT GROUP_CONCAT(namasupplier SEPARATOR '<br/>') FROM product_supplier ";
+        $StrSQL .= "AS ps LEFT JOIN supplier supp ON ps.idsupplier = supp.idsupplier ";
+        $StrSQL .= "WHERE ps.idproduct = %d GROUP BY ps.idproduct";
+        $nilaiRet = db_result(db_query($StrSQL,$productId));
     }
-	db_query($sql_update,$nilai,$productId);
+    if (!empty($sql_update)){
+        db_query($sql_update,$nilai,$productId);
+    }
 	echo $nilaiRet;
 	exit();	
 }
@@ -795,6 +848,31 @@ function ubah_status_product(){
         for ($i = 0;$i < count($selectedProduct);$i++){
             $idProduct = $selectedProduct[$i];
             db_query('UPDATE product SET status_product=%d,uploaded=0, changed=1 WHERE idproduct=%d', $_POST['statusproduct'],$idProduct);
+        }
+    }
+    exit();
+}
+function ubah_supplier_price(){
+    global $user;
+    if (isset($_POST['idproduct']) && !empty($_POST['idproduct']) &&
+        isset($_POST['dataHarga']) && !empty($_POST['dataHarga'])){
+        $IdProduct = $_POST['idproduct'];
+        $ExplodeData = explode('__', $_POST['dataHarga']);
+        for ($i = 0;$i < count($ExplodeData);$i++){
+            $PriceData = explode('_', $ExplodeData[$i]);
+            $StrSql = 'SELECT COUNT(*) FROM product_supplier WHERE idproduct=%d AND idsupplier=%d';
+            $ExplodeId = explode('-',$PriceData[0]);
+            $IdSupplier = $ExplodeId[2];
+            $HargaPokok = $PriceData[1];
+            $PriceExists = db_result(db_query($StrSql, $IdProduct, $IdSupplier));
+            if ($PriceExists){
+                $StrSql = "UPDATE product_supplier SET harga='%f' WHERE idproduct=%d AND idsupplier=%d";
+                db_query($StrSql, $HargaPokok, $IdProduct, $IdSupplier);
+            }else{
+                $StrSql = "INSERT INTO product_supplier (idproduct, idsupplier, harga, uid) ";
+                $StrSql .= "VALUES (%d, %d, '%f', %d)";
+                db_query($StrSql, $IdProduct, $IdSupplier,$HargaPokok, $user->uid);
+            }
         }
     }
     exit();

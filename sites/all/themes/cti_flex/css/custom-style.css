@@ -920,3 +920,12 @@ form.form-item-lined-up, .form-item-lined-up{
 	float: left;
 	margin-left: 10px;
 }
+.col-angka{
+	width : 150px !important;
+}
+.input-number{
+	text-align: right !important;
+}
+.table-harga{
+	font-size: 13px !important;
+}
