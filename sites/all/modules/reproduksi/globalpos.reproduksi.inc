@@ -87,6 +87,8 @@ function tabel_reproduksi($tgl1,$tgl2){
 	$tabelreproduksi .= '<th title="Total nilai laba hasil packing">L. HASIL</th>';
 	$tabelreproduksi .= '<th>KASIR</th>';
 	$tabelreproduksi .= '<th>PEKERJA</th>';
+    $tabelreproduksi .= '<th class="tablebutton"></th>';
+    $tabelreproduksi .= '<th class="tablebutton"></th>';
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</thead>';
 	$tabelreproduksi .= '<tbody>';
@@ -102,6 +104,8 @@ function tabel_reproduksi($tgl1,$tgl2){
 	$tabelreproduksi .= '<th style="text-align: right">Rp. 0&nbsp;&nbsp;</th>';
 	$tabelreproduksi .= '<th>&nbsp;</th>';
 	$tabelreproduksi .= '<th>&nbsp;</th>';
+    $tabelreproduksi .= '<th>&nbsp;</th>';
+    $tabelreproduksi .= '<th>&nbsp;</th>';
 	$tabelreproduksi .= '</tr>';
 	$tabelreproduksi .= '</tfoot>';
 	$tabelreproduksi .= '</table>';
@@ -114,9 +118,10 @@ function detail_reproduksi(){
 		$tabelreproduksi .='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_detail_reproduksi">';
 		$tabelreproduksi .= '<thead>';
 		$tabelreproduksi .= '<tr>';
+        $tabelreproduksi .= '<th class="tablebutton">&nbsp;</th>';
 		$tabelreproduksi .= '<th>BARCODE</th>';
 		$tabelreproduksi .= '<th>PRODUK</th>';
-		$tabelreproduksi .= '<th class="qty">QTY</th>';
+		$tabelreproduksi .= '<th>QTY</th>';
 		$tabelreproduksi .= '<th>H.JUAL</th>';
 		$tabelreproduksi .= '<th>H.MODAL</th>';
 		$tabelreproduksi .= '<th>SUBTOTAL</th>';
@@ -125,7 +130,9 @@ function detail_reproduksi(){
 		$tabelreproduksi .= '</tr>';
 		$tabelreproduksi .= '</thead>';
 		$tabelreproduksi .= '<tbody>';
-		$result = db_query("SELECT c.barcode, c.namaproduct, b.jumlah, b.hargajual,
+		$StrSql = 'SELECT nonota FROM reproduksi WHERE idreproduksi=%d';
+		$NoNota = db_result(db_query($StrSql, $_POST["idreproduksi"]));
+		$result = db_query("SELECT b.idreproduksi, b.idproduct, c.barcode, c.namaproduct, b.jumlah, b.hargajual,
 		b.hargapokok, (b.hargajual-b.hargapokok)*b.jumlah AS laba,
 		(b.hargajual*b.jumlah) AS subtotal, (b.hargapokok*b.jumlah) AS totalmodal FROM 
 		detailreproduksi b LEFT JOIN product c ON b.idproduct=c.idproduct
@@ -133,9 +140,11 @@ function detail_reproduksi(){
 		b.idreproduksi='%d'",$_POST["idreproduksi"]);
 		while($data = db_fetch_object($result)){
 			$tabelreproduksi .= '<tr>';
+            $deletebutton = '<img title="Klik untuk menghapus detail produksi" onclick="hapus_detail('.$data->idreproduksi.','.$data->idproduct.',\''.$NoNota.'\');" src="'.base_path().'misc/media/images/del.ico" width="22">';
+            $tabelreproduksi .= '<td>'.$deletebutton.'</td>';
 			$tabelreproduksi .= '<td>'.$data->barcode.'</td>';
 			$tabelreproduksi .= '<td>'.$data->namaproduct.'</td>';
-			$tabelreproduksi .= '<td class="angka">'.$data->jumlah.'</td>';
+			$tabelreproduksi .= '<td id="qty-'.$_POST["idreproduksi"].'-'.$data->idproduct.'" class="angka edit-qty">'.$data->jumlah.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->hargajual.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->hargapokok.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->subtotal.'</td>';
@@ -144,7 +153,18 @@ function detail_reproduksi(){
 			$tabelreproduksi .= '</tr>';
 		}
 		$tabelreproduksi .= '</tbody>';
-		$tabelreproduksi .= '</table><br><br>';
+        $tabelreproduksi .= '<tfoot>';
+        $tabelreproduksi .= '<tr>';
+        $tabelreproduksi .= '<th colspan="3">TOTAL</th>';
+        $tabelreproduksi .= '<th>QTY</th>';
+        $tabelreproduksi .= '<th>H.JUAL</th>';
+        $tabelreproduksi .= '<th>H.MODAL</th>';
+        $tabelreproduksi .= '<th>SUBTOTAL</th>';
+        $tabelreproduksi .= '<th>MODAL</th>';
+        $tabelreproduksi .= '<th>LABA</th>';
+        $tabelreproduksi .= '</tr>';
+        $tabelreproduksi .= '</tfoot>';
+		$tabelreproduksi .= '</table>';
 		print $tabelreproduksi;
 	}
 	exit();	
@@ -155,6 +175,7 @@ function detail_hasilreproduksi(){
 		$tabelreproduksi .='<table cellpadding="0" cellspacing="0" border="0" class="display" id="tabel_detail_hasilreproduksi">';
 		$tabelreproduksi .= '<thead>';
 		$tabelreproduksi .= '<tr>';
+        $tabelreproduksi .= '<th class="tablebutton">&nbsp;</th>';
 		$tabelreproduksi .= '<th>BARCODE</th>';
 		$tabelreproduksi .= '<th>PRODUK</th>';
 		$tabelreproduksi .= '<th class="qty">QTY</th>';
@@ -166,7 +187,7 @@ function detail_hasilreproduksi(){
 		$tabelreproduksi .= '</tr>';
 		$tabelreproduksi .= '</thead>';
 		$tabelreproduksi .= '<tbody>';
-		$result = db_query("SELECT c.barcode, c.namaproduct, b.jumlah, b.hargajual,
+		$result = db_query("SELECT b.idreproduksi, b.idproduct, c.barcode, c.namaproduct, b.jumlah, b.hargajual,
 		b.hargapokok, (b.hargajual-b.hargapokok)*b.jumlah AS laba,
 		(b.hargajual*b.jumlah) AS subtotal, (b.hargapokok*b.jumlah) AS totalmodal FROM 
 		detailhasilreproduksi b LEFT JOIN product c ON b.idproduct=c.idproduct
@@ -174,9 +195,11 @@ function detail_hasilreproduksi(){
 		b.idreproduksi='%d'",$_POST["idreproduksi"]);
 		while($data = db_fetch_object($result)){
 			$tabelreproduksi .= '<tr>';
+            $deletebutton = '<img title="Klik untuk menghapus hasil produksi" onclick="hapus_hasil('.$data->idreproduksi.','.$data->idproduct.');" src="'.base_path().'misc/media/images/del.ico" width="22">';
+            $tabelreproduksi .= '<td>'.$deletebutton.'</td>';
 			$tabelreproduksi .= '<td>'.$data->barcode.'</td>';
 			$tabelreproduksi .= '<td>'.$data->namaproduct.'</td>';
-			$tabelreproduksi .= '<td class="angka">'.$data->jumlah.'</td>';
+			$tabelreproduksi .= '<td id="qty-'.$_POST["idreproduksi"].'-'.$data->idproduct.'" class="angka edit-qty-hasil">'.$data->jumlah.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->hargajual.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->hargapokok.'</td>';
 			$tabelreproduksi .= '<td class="angka">'.$data->subtotal.'</td>';
@@ -185,6 +208,17 @@ function detail_hasilreproduksi(){
 			$tabelreproduksi .= '</tr>';
 		}
 		$tabelreproduksi .= '</tbody>';
+        $tabelreproduksi .= '<tfoot>';
+        $tabelreproduksi .= '<tr>';
+        $tabelreproduksi .= '<th colspan="3">TOTAL</th>';
+        $tabelreproduksi .= '<th>QTY</th>';
+        $tabelreproduksi .= '<th>H.JUAL</th>';
+        $tabelreproduksi .= '<th>H.MODAL</th>';
+        $tabelreproduksi .= '<th>SUBTOTAL</th>';
+        $tabelreproduksi .= '<th>MODAL</th>';
+        $tabelreproduksi .= '<th>LABA</th>';
+        $tabelreproduksi .= '</tr>';
+        $tabelreproduksi .= '</tfoot>';
 		$tabelreproduksi .= '</table><br><br>';
 		print $tabelreproduksi;
 	}

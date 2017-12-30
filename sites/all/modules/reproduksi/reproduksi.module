@@ -102,6 +102,51 @@ function reproduksi_menu()
         'type' => MENU_CALLBACK,
         'file' => 'globalpos.kasirhasilrepro.inc'
     );
+    $items['reproduksi/deletedetail'] = array(
+        'title' => t('Delete Detail Produksi'),
+        'description' => 'Delete detail produksi',
+        'page callback' => 'delete_detail_production',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Reproduksi Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'delete.produksi.inc'
+    );
+    $items['reproduksi/deletedetailhasil'] = array(
+        'title' => t('Delete Detail Hasil Produksi'),
+        'description' => 'Delete detail hasil produksi',
+        'page callback' => 'delete_detail_hasil_production',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Reproduksi Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'delete.produksi.inc'
+    );
+    $items['reproduksi/updateqtyprod'] = array(
+        'title' => t('Update Detail Produksi'),
+        'description' => 'Update detail produksi',
+        'page callback' => 'update_detail_production',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Reproduksi Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'update.produksi.inc'
+    );
+    $items['reproduksi/updateqtyhasilprod'] = array(
+        'title' => t('Update Detail Hasil Produksi'),
+        'description' => 'Update detail hasil produksi',
+        'page callback' => 'update_detail_hasil_production',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Reproduksi Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'update.produksi.inc'
+    );
+    $items['reproduksi/deleteproduksi'] = array(
+        'title' => t('Delete Produksi'),
+        'description' => 'Delete produksi detail dan hasil',
+        'page callback' => 'delete_production',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Reproduksi Produk'),
+        'type' => MENU_CALLBACK,
+        'file' => 'delete.produksi.inc'
+    );
     return $items;
 } // end hook menu
 

@@ -493,6 +493,27 @@ function hapus_pilihan_diskon(idpelanggan, namapelanggan){
         });
     }
 }
+function delete_pembayaran(idpembayaran, idpelanggan){
+    if (idpembayaran && idpelanggan){
+        var konfirmasi = confirm('Apakah anda yakin ingin menghapus data pembayaran ini...??!');
+        if (konfirmasi){
+            var AlamatHapusPembayaran = pathutama + 'datapelanggan/hapuspembayaran';
+            var request = new Object();
+            request.id = idpembayaran;
+            request.idpelanggan = idpelanggan;
+            $.ajax({
+                type: 'POST',
+                url: AlamatHapusPembayaran,
+                data: request,
+                cache: false,
+                success: function(data){
+                    alert('Pembayaran berhasil dihapus...!!');
+                    window.location = pathutama + 'datapelanggan/pelanggan';
+                }
+            });
+        }
+    }
+}
 $(document).ready(function() {
     pathutama = Drupal.settings.basePath;
     pathfile = pathutama + Drupal.settings.filepath;

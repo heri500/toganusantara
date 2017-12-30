@@ -893,6 +893,45 @@ function printLabelHarga(){
     }
     return $tablePrint;
 }
+
+function printBarcodeProduksi()
+{
+    drupal_add_js('misc/media/jquery-1.4.4.min.js');
+    $css_path = drupal_get_path('module', 'pembelian') . '/css/print_custom.css';
+    drupal_add_css($css_path);
+    $js_path = drupal_get_path('module', 'penjualan') . '/js/direct.print.js';
+    _addBarcodePlugins2();
+    drupal_add_js($js_path);
+    $js_path = drupal_get_path('module', 'reproduksi') . '/js/produksi.barcode.js';
+    drupal_add_js($js_path);
+    $tablePrint = '';
+    $IdProduksi = isset($_GET['idreproduksi']) ? $_GET['idreproduksi'] : null;
+    if (!empty($IdProduksi)) {
+        $StrSql = 'SELECT nonota FROM reproduksi WHERE idreproduksi=%d';
+        $NoProduksi = db_result(db_query($StrSql, $IdProduksi));
+        $StrSql = 'SELECT tglreproduksi FROM reproduksi WHERE idreproduksi=%d';
+        $TglProduksi = explode(' ',db_result(db_query($StrSql, $IdProduksi)));
+        $tablePrint .= '<table style="width: 190px;border-collapse: collapse;margin-top:-2px;" >';
+        $tablePrint .= '<tbody>';
+        $tablePrint .= '<tr>';
+        $tablePrint .= '<td class="exp-cell" valign="bottom">';
+        $tablePrint .= '<div class="exp-date">' . $TglProduksi[0] . '</div>';
+        $tablePrint .= '</td>';
+        $tablePrint .= '<td>';
+        $tablePrint .= '<svg id="barcode" class="barcode-place" align="center"></svg>';
+        $tablePrint .= '<div class="barcode-font" align="center" style="width: 100%;">' . $NoProduksi . '</div>';
+        $tablePrint .= '</td></tr>';
+        $tablePrint .= '</tbody>';
+        $tablePrint .= '</table>';
+        $barcodeData = $NoProduksi;
+        drupal_add_js(
+            array(
+                'barcodeData' => $barcodeData,
+            ),
+            'setting');
+    }
+    return $tablePrint;
+}
 function cekPrinterCommand(){
 	$printOut = '';
 	if (isset($_GET['nidlaundry'])){
@@ -927,6 +966,8 @@ function cekPrinterCommand(){
         $printOut = printProductBatchCode();
     }else if (isset($_GET['idprodlabel'])){
         $printOut = printLabelHarga();
+    }else if (isset($_GET['idreproduksi'])){
+        $printOut = printBarcodeProduksi();
     }
 	return $printOut;
 }

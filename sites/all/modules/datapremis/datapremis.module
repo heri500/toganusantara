@@ -279,10 +279,10 @@ function generate_premis_ajax(){
     print json_encode($jsonPremis);
     exit();
 }
-/*function do_upload_premisdata(){
-    return 'Test';
-}*/
 function do_upload_premisdata(){
+    return 'Test';
+}
+function do_upload_premisdata_old(){
     $resultview = '';
     if (is_connected()) {
         //copy premis data();

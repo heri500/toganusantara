@@ -1,2 +1,2 @@
-CREATE TABLE `toganusantara`.`product_supplier` ( `idproduct` BIGINT NOT NULL , `idsupplier` BIGINT NOT NULL , `harga` DOUBLE NULL , `uid` INT NULL ) ENGINE = MyISAM;
+CREATE TABLE `product_supplier` ( `idproduct` BIGINT NOT NULL ,  `idsupplier` BIGINT NOT NULL ,  `harga` DOUBLE NOT NULL ,  `uid` INT NOT NULL ) ENGINE = MyISAM;
 ALTER TABLE `product_supplier` ADD PRIMARY KEY( `idproduct`, `idsupplier`);

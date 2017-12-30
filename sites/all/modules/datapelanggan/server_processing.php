@@ -154,7 +154,7 @@ function serverSideProduk($request){
 		$strCriteria .= "AND (prod.alt_code LIKE '%%%s%%' OR prod.barcode LIKE '%%%s%%' ";
 		$strCriteria .= "OR prod.namaproduct LIKE '%%%s%%' OR kat.kategori LIKE '%%%s%%' ";
 		$strCriteria .= "OR kat.kodekategori LIKE '%%%s%%' OR subkat.subkategori LIKE '%%%s%%' ";
-		$strCriteria .= "OR subkat.kodesubkategori LIKE '%%%s%%' OR supp.namasupplier LIKE '%%%s%%' ";
+		$strCriteria .= "OR subkat.kodesubkategori LIKE '%%%s%%' ";//OR supp.namasupplier LIKE '%%%s%%' ";
 		//$strCriteria .= "OR supp.kodesupplier LIKE '%%%s%%' ";
 		$strCriteria .= ") ";
 	}
@@ -182,8 +182,8 @@ function serverSideProduk($request){
 	}
 	$strSQLFilteredTotal .= $strCriteria;
 	if (!empty($searchQuery)){
-		$result = db_query($strSQL,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$firstRecord,$lastRecord);
-		$recordsFiltered = db_result(db_query($strSQLFilteredTotal,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery));
+		$result = db_query($strSQL,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$firstRecord,$lastRecord);
+		$recordsFiltered = db_result(db_query($strSQLFilteredTotal,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery,$searchQuery));
 	}else{
 		$result = db_query($strSQL,$firstRecord,$lastRecord);
 		$recordsFiltered = db_result(db_query($strSQLFilteredTotal));
@@ -2033,6 +2033,123 @@ function serverSidePembelian($request){
     );
 }
 
+function serverSidePembelian2($request){
+    $pageStart = $_GET['start'];
+    $pageLength = $_GET['length'];
+    $searchArray = $_REQUEST['search'];
+    $tglAwal = $_REQUEST['tglawal'].' 00:00';
+    $tglAkhir = $_REQUEST['tglakhir'].' 23:59';
+    $idSupplier = $_REQUEST['idsupplier'];
+    $searchQuery = $searchArray['value'];
+    $arrayColumn = array(
+        'prod.barcode','prod.namaproduct','supp.namasupplier',
+        'totalqty','minhargapokok','maxhargapokok','totalmodal'
+    );
+    $orderColumnArray = $_REQUEST['order'];
+    $orderColumn = $arrayColumn[$orderColumnArray[0]['column']].' '.$orderColumnArray[0]['dir'];
+    if (is_null($pageStart)){
+        $pageStart = 0;
+    }
+    if (is_null($pageLength)){
+        $pageLength = 100;
+    }
+    $firstRecord = $pageStart;
+    $lastRecord = $pageStart + $pageLength;
+    $strSQL = "SELECT detail.idproduct,prod.barcode,prod.namaproduct,";
+    $strSQL .= "supp.namasupplier, SUM(detail.jumlah) AS totalqty,";
+    $strSQL .= "MIN(detail.hargapokok) AS minhargapokok,MAX(detail.hargapokok) AS maxhargapokok,";
+    $strSQL .= "SUM(detail.hargapokok*detail.jumlah) AS totalmodal ";
+    $strSQL .= "FROM detailpembelian AS detail ";
+    $strSQLFilteredTotal = "SELECT COUNT(detail.idproduct) ";
+    $strSQLFilteredTotal .= "FROM detailpembelian AS detail ";
+    $strSQL .= "LEFT JOIN pembelian AS pemb ON detail.idpembelian = pemb.idpembelian ";
+    $strSQL .= "LEFT JOIN product AS prod ON detail.idproduct = prod.idproduct ";
+    $strSQL .= "LEFT JOIN supplier AS supp ON prod.idsupplier = supp.idsupplier ";
+    if (!empty($idSupplier)){
+        $strSQL .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' AND prod.idsupplier = %d ";
+    }else{
+        $strSQL .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' ";
+    }
+    $strSQLFilteredTotal .= "LEFT JOIN pembelian AS pemb ON detail.idpembelian = pemb.idpembelian ";
+    $strSQLFilteredTotal .= "LEFT JOIN product AS prod ON detail.idproduct = prod.idproduct ";
+    $strSQLFilteredTotal .= "LEFT JOIN supplier AS supp ON prod.idsupplier = supp.idsupplier ";
+    if (!empty($idSupplier)){
+        $strSQLFilteredTotal .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' AND prod.idsupplier = %d ";
+    }else {
+        $strSQLFilteredTotal .= "WHERE pemb.tglpembelian BETWEEN '%s' AND '%s' ";
+    }
+    $strCriteria = "";
+    if (!empty($searchQuery)){
+        $strCriteria .= "AND (prod.barcode LIKE '%%%s%%' OR prod.namaproduct LIKE '%%%s%%' ";
+        $strCriteria .= "OR supp.namasupplier LIKE '%%%s%%' ";
+        $strCriteria .= ")";
+    }
+    $strSQL .= $strCriteria." GROUP BY detail.idproduct ORDER BY $orderColumn LIMIT %d, %d";
+    $strSQLFilteredTotal .= $strCriteria." GROUP BY detail.idproduct";
+    if (!empty($searchQuery)){
+        if (!empty($idSupplier)){
+            $result = db_query(
+                $strSQL,
+                $tglAwal,
+                $tglAkhir,
+                $idSupplier,
+                $searchQuery,
+                $searchQuery,
+                $searchQuery,
+                $firstRecord,
+                $lastRecord
+            );
+            $recordsFiltered = db_result(
+                db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir, $idSupplier, $searchQuery, $searchQuery, $searchQuery)
+            );
+        }else {
+            $result = db_query(
+                $strSQL,
+                $tglAwal,
+                $tglAkhir,
+                $searchQuery,
+                $searchQuery,
+                $searchQuery,
+                $firstRecord,
+                $lastRecord
+            );
+            $recordsFiltered = db_result(
+                db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir, $searchQuery, $searchQuery, $searchQuery)
+            );
+        }
+    }else{
+        if (!empty($idSupplier)) {
+            $result = db_query($strSQL, $tglAwal, $tglAkhir, $idSupplier, $firstRecord, $lastRecord);
+            $recordsFiltered = db_result(db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir, $idSupplier));
+        }else{
+            $result = db_query($strSQL, $tglAwal, $tglAkhir, $firstRecord, $lastRecord);
+            $recordsFiltered = db_result(db_query($strSQLFilteredTotal, $tglAwal, $tglAkhir));
+        }
+    }
+    $output = array();
+    while ($data = db_fetch_object($result)){
+        $rowData = array();
+        $rowData[] = $data->barcode;
+        $rowData[] = $data->namaproduct;
+        $rowData[] = $data->namasupplier;
+        $rowData[] = number_format($data->totalqty,0,",",".");
+        $rowData[] = number_format($data->minhargapokok,0,",",".");
+        $rowData[] = number_format($data->maxhargapokok,0,",",".");
+        $rowData[] = number_format($data->totalmodal,0,",",".");
+        $rowData[] = $data->idproduct;
+        $output[] = $rowData;
+    }
+    $recordsTotal = db_result(db_query("SELECT COUNT(idproduct) FROM detailpembelian AS detail LEFT JOIN pembelian AS penj ON detail.idpembelian=penj.idpembelian WHERE penj.tglpembelian BETWEEN '%s' AND '%s' GROUP BY detail.idproduct",$tglAwal,$tglAkhir));
+    return array(
+        "draw"            => isset ( $request['draw'] ) ?
+            intval( $request['draw'] ) :
+            0,
+        "recordsTotal"    => intval( $recordsTotal ),
+        "recordsFiltered" => intval( $recordsFiltered ),
+        "data"            => $output
+    );
+}
+
 function serverSideDetailPembelian($request){
     global $baseDirectory;
     $pageStart = $_GET['start'];
@@ -2267,6 +2384,10 @@ function serverSideProduksi($request){
         $rowData[] = number_format($labarepro,0,",",".");
         $rowData[] = $data->name;
         $rowData[] = $data->nama;
+        $TombolPrint = "<img title=\"Klik untuk mencetak barcode produksi\" onclick=\"print_barcode_produksi(".$data->idreproduksi.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/print.png\" width=\"22\">";
+        $rowData[] = $TombolPrint;
+        $TombolHapus = "<img title=\"Klik untuk menghapus data produksi\" onclick=\"del_all_produksi(".$data->idreproduksi.",'".$data->nonota."');\" src=\"$baseDirectory/misc/media/images/delete.ico\" width=\"24\">";
+        $rowData[] = $TombolHapus;
         $rowData[] = $data->idreproduksi;
         $output[] = $rowData;
     }
@@ -2633,6 +2754,8 @@ if ($_GET['request_data'] == 'pelanggan'){
     $returnArray = serverSideCheckLogin($_GET);
 }else if($_GET['request_data'] == 'pembelian'){
     $returnArray = serverSidePembelian($_GET);
+}else if($_GET['request_data'] == 'pembelian2'){
+    $returnArray = serverSidePembelian2($_GET);
 }else if($_GET['request_data'] == 'detailpembelian'){
     $returnArray = serverSideDetailPembelian($_GET);
 }else if($_GET['request_data'] == 'produksi'){

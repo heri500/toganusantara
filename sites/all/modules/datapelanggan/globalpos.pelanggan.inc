@@ -357,17 +357,20 @@ function detail_pembayaran(){
 		$tabelPembayaran ='<table cellpadding="0" cellspacing="0" border="0" class="display" id="history_pembayaran">';
 		$tabelPembayaran .= '<thead>';
 		$tabelPembayaran .= '<tr>';
+        $tabelPembayaran .= '<th class="tablebutton">&nbsp;</th>';
 		$tabelPembayaran .= '<th>TGL BAYAR</th>';
 		$tabelPembayaran .= '<th>KETERANGAN</th>';
 		$tabelPembayaran .= '<th class="col_angka2">NILAI</th>';
 		$tabelPembayaran .= '</tr>';
 		$tabelPembayaran .= '</thead>';
 		$tabelPembayaran .= '<tbody>';
-		$result = db_query("SELECT pembayaran, tglbayar, keterangan FROM historypembayaran WHERE idpelanggan='%d' ORDER BY tglbayar",
+		$result = db_query("SELECT id, pembayaran, tglbayar, keterangan FROM historypembayaran WHERE idpelanggan='%d' ORDER BY tglbayar",
 		$_POST['idpelanggan']);
 		$totalbayar = 0;
 		while ($data = db_fetch_object($result)){
 			$tabelPembayaran .= '<tr>';
+            $TombolHapus = '<img title="Klik untuk menghapus pembayaran hutang" onclick="delete_pembayaran('.$data->id.','.$_POST['idpelanggan'].');" src="'.base_path().'misc/media/images/del.ico" width="22">';
+            $tabelPembayaran .= '<td class="center">'.$TombolHapus.'</td>';
 			$tabelPembayaran .= '<td class="center">'.$data->tglbayar.'</td>';
 			$totalbayar = $totalbayar + $data->pembayaran;
 			$tabelPembayaran .= '<td class="angka">'.$data->keterangan.'</td>';
@@ -378,6 +381,7 @@ function detail_pembayaran(){
 		$_POST["idpelanggan"]);
 		while ($data = db_fetch_object($result)){
 			$tabelPembayaran .= '<tr>';
+            $tabelPembayaran .= '<td class="center">&nbsp;</td>';
 			$tabelPembayaran .= '<td class="center">'.$data->tglbayar.'</td>';
 			$totalbayar = $totalbayar - $data->penggunaan;
 			$tabelPembayaran .= '<td class="angka">'.$data->keterangan.'</td>';
@@ -388,7 +392,7 @@ function detail_pembayaran(){
 		$tabelPembayaran .= '<tfoot>';
 		$tabelPembayaran .= '<tr>';
 		$tabelPembayaran .= '<th style="text-align:right" colspan="2">Total:&nbsp;&nbsp;</th>';
-		$tabelPembayaran .= '<th style="text-align: right" >Rp. '.number_format($totalbayar,0,',','.').'&nbsp;&nbsp;</th>';
+		$tabelPembayaran .= '<th style="text-align: right" colspan="2">Rp. '.number_format($totalbayar,0,',','.').'&nbsp;&nbsp;</th>';
 		$tabelPembayaran .= '</tr>';
 		$tabelPembayaran .= '</tfoot>';
 		$tabelPembayaran .= '</table>';
@@ -430,5 +434,16 @@ function update_diskon_kategori_ajax(){
         $Diskon = update_diskon_kategori($SplitId[1],$BesarDiskon);
     }
     print $Diskon;
+    exit();
+}
+
+function delete_history_pembayaran(){
+    if (isset($_POST['id']) && isset($_POST['idpelanggan'])){
+        $DelId = $_POST['id'];
+        $IdPelanggan = $_POST['idpelanggan'];
+        $StrSql = 'DELETE FROM historypembayaran WHERE id=%d';
+        db_query($StrSql, $DelId);
+        syncHutangPelanggan($IdPelanggan);
+    }
     exit();
 }

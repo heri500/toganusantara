@@ -32,8 +32,8 @@ function reproduksi(){
 	$panduantombol = '<a style="font-weight: bold;text-align: center;">Ctrl+Shift+</a>';
 	$tombolqty = '<a id="tombolubahqty" onclick="ubahqty()" class="buttonqty">F3:UBAH QTY</a>';
 	$tombolhapus = '<a class="buttonhapus" onclick="hapus_latest_produk()">F4:HAPUS PRODUK</a>';
-	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data()">F5:SELESAI</a>';
-	$tombolprint = '<a class="buttonprint" onclick="kirim_data()">F6:SELESAI&PRINT</a>';
+	$tombolselesai = '<a class="buttonselesai" onclick="kirim_data(0)">F5:SELESAI</a>';
+	$tombolprint = '<a class="buttonprint" onclick="kirim_data(1)">F6:SELESAI&PRINT</a>';
 	$reproduksi = '<button onclick="munculkankasir();" style="font-size:12px;border: 1px solid orangered;">Klik untuk memunculkan kasir</button>';
 	$reproduksi .= '<div id="dialogkasir" style="font-size: 12px;" title="FORM PRODUKSI ['.date("d-m-Y").']">';
 	$reproduksi .= '<div id="info-kasir-waktu">';
@@ -102,7 +102,7 @@ function simpan_reproduksi(){
 		db_query("INSERT INTO reproduksi (nonota, idpemakai, total, tglreproduksi, idpekerja) 
 		VALUES ('%s', '%d', '%f', '%s', '%d')",
 		$no_nota, $user->uid, $_POST["totalbelanja"], $waktujual, $_POST["idpekerja"]);
-		print $_POST["detail_produk"];
+		print $next_id;
 		$pecahdetail = explode("&",$_POST["detail_produk"]);
 		$totalmodal = 0;
 		foreach ($pecahdetail as $parameter){

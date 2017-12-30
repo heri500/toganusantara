@@ -929,3 +929,6 @@ form.form-item-lined-up, .form-item-lined-up{
 .table-harga{
 	font-size: 13px !important;
 }
+table tfoot th{
+	text-align: right !important;
+}

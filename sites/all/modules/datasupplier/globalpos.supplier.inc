@@ -231,8 +231,8 @@ function detail_pembayaran_hutang(){
 		$tabelpembayaran .= '</tbody>';
 		$tabelpembayaran .= '<tfoot>';
 		$tabelpembayaran .= '<tr>';
-		$tabelpembayaran .= '<th style="text-align:right">Total:&nbsp;&nbsp;</th>';
-		$tabelpembayaran .= '<th colspan="3" style="text-align: right" >Rp. '.number_format($totalbayar,0,",",".").'&nbsp;&nbsp;</th>';
+		$tabelpembayaran .= '<th colspan="2" style="text-align:right">Total:&nbsp;&nbsp;</th>';
+		$tabelpembayaran .= '<th colspan="2" style="text-align: right" >Rp. '.number_format($totalbayar,0,",",".").'&nbsp;&nbsp;</th>';
 		$tabelpembayaran .= '</tr>';
 		$tabelpembayaran .= '</tfoot>';
 		$tabelpembayaran .= '</table>';

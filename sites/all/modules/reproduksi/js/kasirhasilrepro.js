@@ -307,8 +307,8 @@ $(document).ready(function(){
         }
     });
     $('#newqty').autotab_filter({
-        format: 'numeric',
-        nospace: true
+        format: 'custom',
+        pattern: '[^0-9\.]'
     });
 
     $('#newqty').keypress(function(e) {

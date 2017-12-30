@@ -6,6 +6,7 @@ var giCount = 1;
 var totalbelanja = 0;
 var totalproduk = 0;
 var barisrubah;
+var CetakBarcode = 0;
 function tampilkantabelkasir(){
     oTable = $('#tabel_kasir').dataTable( {
         'bJQueryUI': true,
@@ -98,7 +99,8 @@ function tambahproduk(){
         }
     });
 }
-function kirim_data(){
+function kirim_data(cetak){
+    CetakBarcode = cetak;
     if (totalproduk > 0 && $('#idpekerja').val() != 0){
         var sData = $('input', oTable.fnGetNodes()).serialize();
         $('#nilaikirim').val(sData);
@@ -180,6 +182,9 @@ function akhiri_belanja(){
         cache: false,
         success: function(data){
             if (data != 'error'){
+                if (CetakBarcode){
+                    window.open(pathutama + 'print/6?idreproduksi='+ data);
+                }
                 window.location = pathutama + 'reproduksi/kasir';
             }else{
                 alert('Ada masalah dalam penyimpanan data...!!!');
@@ -281,8 +286,10 @@ $(document).ready(function(){
                 $('#pesantext').text('Mohon isi barcode atau kode produk atau nama produk yang ingin dicari...!!!');
                 $('#dialogwarning').dialog('open');
             }
-        }else if (e.keyCode == 116 || e.keyCode == 117){
-            kirim_data();
+        }else if (e.keyCode == 116) {
+            kirim_data(0);
+        }else if (e.keyCode == 117){
+            kirim_data(1);
         }else if (e.keyCode == 115){
             hapus_latest_produk();
         }
@@ -301,8 +308,8 @@ $(document).ready(function(){
         }
     });
     $('#newqty').autotab_filter({
-        format: 'numeric',
-        nospace: true
+        format: 'custom',
+        pattern: '[^0-9\.]'
     });
 
     $('#newqty').keypress(function(e) {

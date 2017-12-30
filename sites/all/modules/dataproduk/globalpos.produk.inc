@@ -804,23 +804,25 @@ function update_data_produk(){
 		$strSQL = "SELECT satuan FROM product WHERE idproduct=%d";
 		$satuanAsal = db_result(db_query($strSQL,$productId));
 		$konversiSatuan = get_konversi_satuan($nilai,$satuanAsal);
-		$hargaJualBaru = $hargaJual*$konversiSatuan;
-		$hargaPokokBaru = $hargaPokok*$konversiSatuan;
-		$stokBaru = $stokSebelum/$konversiSatuan;
-		$sqlUpdateStok = "UPDATE product SET stok='%f',hargajual='%f',hargapokok='%f' WHERE idproduct=%d";
-		db_query($sqlUpdateStok,$stokBaru,$hargaJualBaru, $hargaPokokBaru,$productId);
-		$selisihStok = $stokBaru - $stokSebelum;
-		if ($selisihStok < 0){
-			$keluar = abs($selisihStok);
-			$keterangan = 'Perubahan Stock-Stok Berkurang';
-			db_query("INSERT INTO transaksistock (idproduk, stocksebelum, keluar, stocksetelah, keterangan) VALUES 
-			('%d', '%f', '%f', '%f', '%s')",$productId,$stokSebelum,$keluar,$stokBaru,$keterangan);
-		}else{
-			$masuk = $selisihStok;
-			$keterangan = 'Perubahan Stock-Stok Bertambah';
-			db_query("INSERT INTO transaksistock (idproduk, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
-			('%d', '%f', '%f', '%f', '%s')",$productId,$stokSebelum,$masuk,$stokBaru,$keterangan);
-		}
+		if ($konversiSatuan) {
+            $hargaJualBaru = $hargaJual * $konversiSatuan;
+            $hargaPokokBaru = $hargaPokok * $konversiSatuan;
+            $stokBaru = $stokSebelum / $konversiSatuan;
+            $sqlUpdateStok = "UPDATE product SET stok='%f',hargajual='%f',hargapokok='%f' WHERE idproduct=%d";
+            db_query($sqlUpdateStok, $stokBaru, $hargaJualBaru, $hargaPokokBaru, $productId);
+            $selisihStok = $stokBaru - $stokSebelum;
+            if ($selisihStok < 0) {
+                $keluar = abs($selisihStok);
+                $keterangan = 'Perubahan Stock-Stok Berkurang';
+                db_query("INSERT INTO transaksistock (idproduk, stocksebelum, keluar, stocksetelah, keterangan) VALUES 
+			('%d', '%f', '%f', '%f', '%s')", $productId, $stokSebelum, $keluar, $stokBaru, $keterangan);
+            } else {
+                $masuk = $selisihStok;
+                $keterangan = 'Perubahan Stock-Stok Bertambah';
+                db_query("INSERT INTO transaksistock (idproduk, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
+			('%d', '%f', '%f', '%f', '%s')", $productId, $stokSebelum, $masuk, $stokBaru, $keterangan);
+            }
+        }
 		$nilaiRet = $nilai;
 	}else if ($kolom == "11") {
 	    db_query('DELETE FROM product_supplier WHERE idproduct=%d',$productId);

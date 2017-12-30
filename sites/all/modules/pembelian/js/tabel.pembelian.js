@@ -165,7 +165,7 @@ function tampiltabelbeli(){
             'aaSorting': [[urutan, 'desc']],
             'processing': true,
             'serverSide': true,
-            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan2&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
+            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=pembelian2&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
             buttons: [
                 {
                     extend: 'colvis'
@@ -179,10 +179,6 @@ function tampiltabelbeli(){
                 $('td', row).eq(4).addClass('angka');
                 $('td', row).eq(5).addClass('angka');
                 $('td', row).eq(6).addClass('angka');
-                $('td', row).eq(7).addClass('angka');
-                $('td', row).eq(8).addClass('angka');
-                $('td', row).eq(9).addClass('angka');
-                $('td', row).eq(10).addClass('angka');
             },
             'footerCallback': function ( row, data, start, end, display ) {
                 var api = this.api(), data;
@@ -195,33 +191,13 @@ function tampiltabelbeli(){
                 };
                 // Total over all pages
                 total = api
-                    .column( 8 )
+                    .column( 6 )
                     .data()
                     .reduce( function (a, b) {
                         return intVal(a) + intVal(b);
                     }, 0 );
                 // Update footer
-                $( api.column( 8 ).footer() ).html(
-                    'Rp. '+ addCommas(total)
-                ).addClass('angka');
-                total = api
-                    .column( 9 )
-                    .data()
-                    .reduce( function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0 );
-                // Update footer
-                $( api.column( 9 ).footer() ).html(
-                    'Rp. '+ addCommas(total)
-                ).addClass('angka');
-                total = api
-                    .column( 10 )
-                    .data()
-                    .reduce( function (a, b) {
-                        return intVal(a) + intVal(b);
-                    }, 0 );
-                // Update footer
-                $( api.column( 10 ).footer() ).html(
+                $( api.column( 6 ).footer() ).html(
                     'Rp. '+ addCommas(total)
                 ).addClass('angka');
             },
@@ -464,12 +440,12 @@ $(document).ready(function(){
 	$("#tgl1").datepicker({
 		changeMonth: true,
 		changeYear: true,
-		dateFormat: "dd-mm-yy"
+		dateFormat: "yy-mm-dd"
 	});
 	$("#tgl2").datepicker({
 		changeMonth: true,
 		changeYear: true,
-		dateFormat: "dd-mm-yy"
+		dateFormat: "yy-mm-dd"
 	});
     $('#add-new-button').on('click', function(){
         var request = new Object();

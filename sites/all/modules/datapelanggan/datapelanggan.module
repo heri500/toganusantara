@@ -117,6 +117,15 @@ function datapelanggan_menu() {
         'type' => MENU_CALLBACK,
         'file' => 'globalpos.pelanggan.inc'
     );
+    $items['datapelanggan/hapuspembayaran'] = array(
+        'title' => t('Hapus Pembayaran Pelanggan'),
+        'description' => 'Hapus pembayaran hutangan pelanggan',
+        'page callback' => 'delete_history_pembayaran',
+        'access callback' => 'user_access',
+        'access arguments' => array('Admin Data Pelanggan'),
+        'type' => MENU_CALLBACK,
+        'file' => 'globalpos.pelanggan.inc'
+    );
 	return $items;
 } // end hook menu
 
