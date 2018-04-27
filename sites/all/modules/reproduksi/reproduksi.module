@@ -153,3 +153,7 @@ function reproduksi_menu()
 function reproduksi_perm() {
 	return array('Admin Reproduksi Produk','Admin Data Reproduksi');
 }
+
+function array_status_produksi(){
+    return array('PRODUKSI', 'REJECT', 'SAMPEL');
+}

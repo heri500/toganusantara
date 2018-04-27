@@ -51,8 +51,14 @@ function reproduksi(){
 	$reproduksi .= 'Jam';
 	$reproduksi .= '</div>';
 	$reproduksi .= '<div id="tempatkosong">';
-	$reproduksi .= '<div id="tempatsupplier"><label>PEKERJA</label></div>';
-	$reproduksi .= '<div id="tempatsupplier2">'.createPekerjaSelection().'</div>';
+	$reproduksi .= '<div id="tempatsupplier2"><label>PEKERJA</label>'.createPekerjaSelection(null, '--Pilih Pekerja--', false, 'label').'</div>';
+	$StatusProduksi = '<select id="status-produksi" name="status-produksi" class="label">';
+	$ArrayStatus = array_status_produksi();
+	for ($i = 0;$i < count($ArrayStatus);$i++){
+        $StatusProduksi .= '<option value="'.$i.'">'.$ArrayStatus[$i].'</option>';
+    }
+    $StatusProduksi .= '</select>';
+	$reproduksi .= '<div id="tempatsupplier2"><label>STATUS</label>'.$StatusProduksi.'</div>';
 	$reproduksi .= '</div>';
 	$reproduksi .= '</div>';
 	$reproduksi .= '<div id="barcode_place">SCAN ATAU INPUT BARCODE, KODE ATAU NAMA PRODUK : <input type="text" id="barcode" name="barcode" class="barcodekasir"></div>';
@@ -99,10 +105,15 @@ function simpan_reproduksi(){
 		//date_default_timezone_set('Asia/Jakarta');
 		$waktujual = $_POST["tglreproduksi"]." ".date("H:i:s");
 		global $user;
-		db_query("INSERT INTO reproduksi (nonota, idpemakai, total, tglreproduksi, idpekerja) 
-		VALUES ('%s', '%d', '%f', '%s', '%d')",
-		$no_nota, $user->uid, $_POST["totalbelanja"], $waktujual, $_POST["idpekerja"]);
-		print $next_id;
+		$Keterangan = $_POST["keterangan"];
+		$StatusProduksi = $_POST["status_produksi"];
+		db_query("INSERT INTO reproduksi (nonota, idpemakai, total, tglreproduksi, idpekerja, 
+        keterangan, status_produksi) 
+		VALUES ('%s', '%d', '%f', '%s', '%d', '%s', '%d')",
+		$no_nota, $user->uid, $_POST["totalbelanja"], $waktujual, $_POST["idpekerja"],
+        $Keterangan, $StatusProduksi);
+        $next_id = db_last_insert_id('reproduksi','idreproduksi');
+        print $next_id;
 		$pecahdetail = explode("&",$_POST["detail_produk"]);
 		$totalmodal = 0;
 		foreach ($pecahdetail as $parameter){
@@ -111,8 +122,7 @@ function simpan_reproduksi(){
 			$IDPRODUK =	$pecahnilai[0];
 			$QTY = $pecahnilai[1];
 			$HARGAJUAL = $pecahnilai[2];
-			$DISKON = $pecahnilai[3];
-			$result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);	
+			$result = db_query("SELECT hargapokok,stok FROM product WHERE idproduct='%d'",$IDPRODUK);
 			$data = db_fetch_object($result);
 			$HARGAPOKOK = $data->hargapokok;
 			$totalmodal = $totalmodal + ($HARGAPOKOK*$QTY);

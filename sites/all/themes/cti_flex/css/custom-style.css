@@ -301,6 +301,13 @@ div.barisbayar select{
 	font-weight: bold;
 	padding: 3px;	
 }
+#tempatsupplier2 select.label{
+	float: left;
+	width: 180px;
+	height: 25px;
+	font-weight: bold;
+	padding: 3px;
+}
 #info-kasir-waktu #tempatsupplier,#info-kasir-waktu #tempatsupplier2{
 	margin-left: 8px;
 }

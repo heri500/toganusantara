@@ -35,11 +35,11 @@ function datapekerja_perm() {
     return array('Admin Data Pekerja');
 }
 
-function createPekerjaSelection($defaultValue = null, $emptyText = '-Pilih Pekerja-', $inisialUlang = false){
+function createPekerjaSelection($defaultValue = null, $emptyText = '-Pilih Pekerja-', $inisialUlang = false, $Class = ''){
     if ($inisialUlang){
-        $pilihpekerja = '<select id="idpekerja" name="idpekerja" onchange="inisialulang();">';
+        $pilihpekerja = '<select id="idpekerja" name="idpekerja" onchange="inisialulang();" class="'.$Class.'">';
     }else{
-        $pilihpekerja = '<select id="idpekerja" name="idpekerja">';
+        $pilihpekerja = '<select id="idpekerja" name="idpekerja" class="'.$Class.'">';
     }
     if (empty($defaultValue)){
         $pilihpekerja .= '<option selected value="0">'.$emptyText.'</option>';

@@ -544,7 +544,6 @@ function simpan_produk(){
 				$file_obj->timestamp = time();
 				$file_obj->list = 1;
 				$file_obj->new = true;
-				dpm($file_obj);
 				// Save file to files table
 				drupal_write_record('files', $file_obj);
 				file_set_status($file_obj,1);

@@ -215,7 +215,7 @@ function detail_pembayaran_hutang(){
 		$tabelpembayaran .= '</tr>';
 		$tabelpembayaran .= '</thead>';
 		$tabelpembayaran .= '<tbody>';
-		$result = db_query("SELECT id, idsupplier, keterangan, pembayaran, SUBSTR(last_update,1,10) AS tglbayar FROM pembayaranhutang WHERE idsupplier='%d'",
+		$result = db_query("SELECT id, idsupplier, keterangan, pembayaran, SUBSTR(tglbayar,1,10) AS tglbayar FROM pembayaranhutang WHERE idsupplier='%d'",
 		$_POST["idsupplier"]);
 		$totalbayar = 0;
 		while ($data = db_fetch_object($result)){

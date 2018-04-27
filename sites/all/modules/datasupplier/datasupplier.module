@@ -149,22 +149,22 @@ function getTotalPembayaranSupplier($idSupplier = null, $periode = null){
 	if (!empty($idSupplier)){
 		if (empty($periode)) {
 			$result = db_result(
-				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier='%d'", $idSupplier)
+				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier='%d' AND pembayaran >= 0", $idSupplier)
 			);
 		}else if (!empty($periode) && isset($periode['awal']) && isset($periode['akhir'])){
 			$result = db_result(
-				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier='%d' AND tglbayar BETWEEN '%s' AND '%s' ", $idSupplier, $periode['awal'], $periode['akhir'])
+				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier='%d' AND (tglbayar BETWEEN '%s' AND '%s') AND pembayaran >= 0 ", $idSupplier, $periode['awal'], $periode['akhir'])
 			);
 		}
 		$totalpembayaran = $result;
 	}else{
 		if (empty($periode)) {
 			$result = db_result(
-				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang")
+				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE pembayaran >= 0")
 			);
 		}else if (!empty($periode) && isset($periode['awal']) && isset($periode['akhir'])){
 			$result = db_result(
-				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE tglbayar BETWEEN '%s' AND '%s' ", $periode['awal'], $periode['akhir'])
+				db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE (tglbayar BETWEEN '%s' AND '%s') AND pembayaran >= 0 ", $periode['awal'], $periode['akhir'])
 			);
 		}
 		$totalpembayaran = $result;
@@ -176,6 +176,29 @@ function syncHutangSupplier($idSupplier = null){
         $totalHutang = db_result(db_query("SELECT SUM(besarhutang) FROM detailhutang WHERE idsupplier=%d", $idSupplier));
         $totalBayar = db_result(db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier=%d", $idSupplier));
         db_query("UPDATE hutang SET besarhutang='%f' WHERE idsupplier=%d", ($totalHutang - $totalBayar), $idSupplier);
+        $ReturnData[] = array($totalHutang - $totalBayar);
+        return $ReturnData;
+    }else{
+        $StrSql = 'SELECT idsupplier FROM supplier';
+        $result = db_query($StrSql);
+        $DataHutangSupplier = array();
+        while ($data = db_fetch_object($result)){
+            $idSupplier = $data->idsupplier;
+            $totalHutang = db_result(db_query("SELECT SUM(besarhutang) FROM detailhutang WHERE idsupplier=%d", $idSupplier));
+            $totalBayar = db_result(db_query("SELECT SUM(pembayaran) FROM pembayaranhutang WHERE idsupplier=%d", $idSupplier));
+            db_query("UPDATE hutang SET besarhutang='%f' WHERE idsupplier=%d", ($totalHutang - $totalBayar), $idSupplier);
+            $DataHutangSupplier[$idSupplier] = ($totalHutang - $totalBayar);
+        }
+        return $DataHutangSupplier;
     }
-    return ($totalHutang - $totalBayar);
+}
+function sync_hutang_supplier_rest(){
+    if (isset($_POST['idsupplier']) && !empty($_POST['idsupplier'])){
+        $IdSupplier = $_POST['idsupplier'];
+        $ReturnData = syncHutangSupplier($IdSupplier);
+    }else{
+        $ReturnData = syncHutangSupplier();
+    }
+    print json_encode($ReturnData);
+    exit();
 }

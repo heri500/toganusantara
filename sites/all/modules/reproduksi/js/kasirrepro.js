@@ -169,10 +169,13 @@ function hapus_produk(posisi,nTr,idproduk){
     $('#barcode').select();
 }
 function akhiri_belanja(){
+    var keterangan = prompt('Input keterangan produksi');
     var request = new Object();
     request.detail_produk = $('#nilaikirim').val();
     request.idpekerja = $('#idpekerja').val();
     request.totalbelanja = totalbelanja;
+    request.keterangan = keterangan;
+    request.status_produksi = $('#status-produksi').val();
     request.tglreproduksi = $('#tglreproduksikirim').val();
     alamat = pathutama + 'reproduksi/simpanreproduksi';
     $.ajax({
