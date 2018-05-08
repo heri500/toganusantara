@@ -405,11 +405,11 @@ input[type="text"].barcodekasir{
 	margin-bottom: 10px;
 }
 #main #formplace.supplier{
-	width: 800px;
+	width: 720px;
 	margin-bottom: 10px;
 }
 #main #formplace.pelanggan{
-	width: 800px;
+	width: 720px;
 	margin-bottom: 10px;
 }
 #main #formplace.subkategori button{
@@ -424,14 +424,24 @@ input[type="text"].barcodekasir{
 	width: 75px;
 	margin-bottom: 6px;
 	float: left;
-	height: 24px;
+	padding-top: 4px;
 }
-#main #formplace input[type="text"] {
+#main #formplace input[type="text"],
+#main #formplace input[type="password"],
+#main #formplace select{
 	margin-right: 10px;
 	height: 20px;
 	margin-top:0;
 }
-#main #formplace.supplier input[type="text"],#main #formplace.pelanggan input[type="text"]{
+#main #formplace select{
+	height: 25px !important;
+}
+#main #formplace.supplier input[type="text"],
+#main #formplace.supplier input[type="password"],
+#main #formplace.supplier select,
+#main #formplace.pelanggan input[type="text"],
+#main #formplace.pelanggan input[type="password"],
+#main #formplace.pelanggan select{
 	margin-bottom: 4px;
 	float: left;
 }

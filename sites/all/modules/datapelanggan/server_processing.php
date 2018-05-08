@@ -42,7 +42,7 @@ function serverSidePelanggan($request){
 	$searchQuery = $searchArray['value'];
 	$arrayColumn = array(
 		'','','','plg.kodepelanggan','plg.namapelanggan','plg.telp', 'plg.alamat',
-		'plg.email','plg.url_database','plg.username','plg.password',
+		'plg.email','plg.url_database','plg.username','plg.password', 'plg.status_pelanggan',
         'ptg.besarhutang','ptg.pembayaranterakhir','bayarterakhir'
 	);
 	$orderColumnArray = $_REQUEST['order'];
@@ -56,12 +56,13 @@ function serverSidePelanggan($request){
 	$firstRecord = $pageStart;
 	$lastRecord = $pageStart + $pageLength;
 	$strSQL = "SELECT plg.idpelanggan,plg.kodepelanggan,plg.namapelanggan,plg.telp,plg.alamat,plg.email,";
-    $strSQL .= "plg.url_database, plg.username, plg.password, ";
-	$strSQLFilteredTotal = "SELECT COUNT(plg.idpelanggan) ";
+    $strSQL .= "plg.url_database, plg.username, plg.password, plg.status_pelanggan, ";
 	$strSQL .= "ptg.besarhutang, ptg.pembayaranterakhir, SUBSTR(ptg.last_update,1,10) AS bayarterakhir ";
 	$strSQL .= "FROM pelanggan AS plg ";
+    $strSQL .= "LEFT JOIN piutang AS ptg ON ptg.idpelanggan = plg.idpelanggan WHERE 1=1 ";
+    $strSQLFilteredTotal = "SELECT COUNT(plg.idpelanggan) ";
 	$strSQLFilteredTotal .= "FROM pelanggan AS plg ";
-	$strSQL .= "LEFT JOIN piutang AS ptg ON ptg.idpelanggan = plg.idpelanggan WHERE 1=1 ";
+
 	$strSQLFilteredTotal .= "LEFT JOIN piutang AS ptg ON ptg.idpelanggan = plg.idpelanggan WHERE 1=1 ";
 	$strCriteria = "";
 	if (!empty($searchQuery)){
@@ -78,6 +79,7 @@ function serverSidePelanggan($request){
 		$recordsFiltered = db_result(db_query($strSQLFilteredTotal));
 	}
 	$output = array();
+	$StatusPelanggan = array('Eksternal','Internal');
 	while ($data = db_fetch_object($result)){
 		$rowData = array();
 		$lihathutang = "<img title=\"Klik untuk melihat detail hutang\" src=\"$baseDirectory/misc/media/images/forward_enabled.ico\" onclick=\"view_detail_hutang(".$data->idpelanggan.",'".$data->namapelanggan."','".round($data->besarhutang)."');\">";
@@ -97,6 +99,7 @@ function serverSidePelanggan($request){
 		$rowData[] = number_format($data->besarhutang,0,",",".");
 		$rowData[] = number_format($data->pembayaranterakhir,0,",",".");
 		$rowData[] = $data->bayarterakhir;
+        $rowData[] = $StatusPelanggan[$data->status_pelanggan];
         $rowData[] = $data->idpelanggan;
 		$output[] = $rowData;
 	}

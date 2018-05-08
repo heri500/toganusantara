@@ -115,6 +115,16 @@ function tampilkantabelpelanggan(){
             $('td', row).eq(11).addClass('angka');
             $('td', row).eq(12).addClass('angka');
             $('td', row).eq(13).addClass('center');
+            $('td', row).eq(14).addClass('editable').editable(alamatupdate, {
+                'submitdata': function ( value, settings ) {
+                    return { 'row_id': this.parentNode.getAttribute('id'), 'kol_id': 14 };
+                },
+                'data' : Drupal.settings.status_options,
+                'type'   : 'select',
+                'height': '20px',
+                'submit': 'Ok',
+                'indicator': 'Menyimpan...',
+            });
         },
         buttons: [
             'copy', 'excel', 'print'

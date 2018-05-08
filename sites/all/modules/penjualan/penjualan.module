@@ -356,7 +356,7 @@ function getRandomStringAjax(){
 function get_updated_penjualan(){
 	$strSQL = 'SELECT idpenjualan, nonota, idtitipanlaundry, idcustomerorder, tglpenjualan, idpemakai, ';
 	$strSQL .= 'idpelanggan, total, totalmodal, carabayar, bayar, kembali, perlakuankembalian, ';
-	$strSQL .= 'nokartu, keterangan, insert_date ';
+	$strSQL .= 'nokartu, keterangan, insert_date, status_pelanggan ';
 	$strSQL .= 'FROM penjualan WHERE uploaded=0';
 	$result = db_query($strSQL);
 	$dataPenjualan = array();

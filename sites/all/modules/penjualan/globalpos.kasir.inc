@@ -245,51 +245,57 @@ function simpan_penjualan(){
 		if (isset($_POST['idtitipanlaundry']) && !empty($_POST['idtitipanlaundry'])){
 			$idtitipanlaundry = $_POST['idtitipanlaundry'];
 		}
-		db_query("INSERT INTO penjualan (nonota, idpemakai, total, bayar, kembali, tglpenjualan, idpelanggan, carabayar, idtitipanlaundry, perlakuankembalian) 
-		VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%d', '%s', '%d', '%d')",
+        $StatusPelanggan = 0;
+        if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])){
+		    $StatusPelanggan = db_result(db_query('SELECT status_pelanggan FROM pelanggan WHERE idpelanggan=%d', $_POST["idpelanggan"]));
+        }
+		db_query("INSERT INTO penjualan (nonota, idpemakai, total, bayar, kembali, tglpenjualan, idpelanggan, carabayar, idtitipanlaundry, perlakuankembalian, status_pelanggan) 
+		VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%d', '%s', '%d', '%d', '%d')",
 		$no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual,
-		$_POST["idpelanggan"],$_POST["carabayar"], $idtitipanlaundry,$perkuankembalian);
+		$_POST["idpelanggan"],$_POST["carabayar"], $idtitipanlaundry,$perkuankembalian,$StatusPelanggan);
 		$next_id = db_last_insert_id('penjualan', 'idpenjualan');
 		print $next_id;
-		if ($kembali > 0 && $perkuankembalian == 2){
-			if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])){
-				$variables['idpelanggan'] = $_POST["idpelanggan"];
-				$variables['hutang'] = getTotalHutang($_POST["idpelanggan"]);
-				$variables['pembayaran'] = $kembali;
-				$variables['tglbayar'] = $waktujual;
-				$variables['idpenjualan'] = $next_id;
-				$variables['idtitipanlaundry'] = $idtitipanlaundry;
-				$variables['keterangan'] = 'Deposit Uang Dari Kembalian Nota Penjualan : '.$no_nota.' Tanggal : '.$waktujual;
-				pembayaranhutang($variables);	
-			}
-		}else if ($kembali < 0){
-			db_query("INSERT INTO detailpiutang (idpelanggan, idpenjualan, besarhutang) VALUES ('%d','%d','%f')",
-			$_POST["idpelanggan"],$next_id,abs($kembali));
-			$resultpiutang = db_query("SELECT idpelanggan, besarhutang  FROM piutang WHERE idpelanggan='%d'",
-			$_POST["idpelanggan"]);
-			$datapiutang = db_fetch_object($resultpiutang);
-			if ($datapiutang->idpelanggan){
-				$besarhutangskrg = $datapiutang->besarhutang + abs($kembali);
-				db_query("UPDATE piutang SET besarhutang='%f',uid='%d' WHERE idpelanggan='%d'",
-				$besarhutangskrg,$user->uid,$_POST["idpelanggan"]);
-			}else{
-				db_query("INSERT INTO piutang(idpelanggan,besarhutang,uid)VALUES('%d','%f','%d')",
-				$_POST["idpelanggan"],abs($kembali),$user->uid);	
-			}
-		}
-		if ($_POST["carabayar"] == "DEPOSIT"){
-			if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])){
-				$sisaDeposit = getTotalPembayaran($_POST["idpelanggan"]) - (getTotalHutang($_POST["idpelanggan"]) + getTotalPenggunaanDeposit($_POST["idpelanggan"]));
-				$variables['idpelanggan'] = $_POST["idpelanggan"];
-				$variables['deposit'] = $sisaDeposit;
-				$variables['penggunaan'] = $_POST["bayar"];
-				$variables['tglbayar'] = $waktujual;
-				$variables['keterangan'] = 'Penggunaan deposit untuk pembayaran nota : '.$no_nota.' Tanggal : '.$waktujual;
-				$variables['idpenjualan'] = $next_id;
-				penggunaandeposit($variables);
-				syncHutangPelanggan($_POST["idpelanggan"]);
-			}
-		}
+		if ($StatusPelanggan == 0) {
+            if ($kembali > 0 && $perkuankembalian == 2) {
+                if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])) {
+                    $variables['idpelanggan'] = $_POST["idpelanggan"];
+                    $variables['hutang'] = getTotalHutang($_POST["idpelanggan"]);
+                    $variables['pembayaran'] = $kembali;
+                    $variables['tglbayar'] = $waktujual;
+                    $variables['idpenjualan'] = $next_id;
+                    $variables['idtitipanlaundry'] = $idtitipanlaundry;
+                    $variables['keterangan'] = 'Deposit Uang Dari Kembalian Nota Penjualan : ' . $no_nota . ' Tanggal : ' . $waktujual;
+                    pembayaranhutang($variables);
+                }
+            } else if ($kembali < 0) {
+                db_query("INSERT INTO detailpiutang (idpelanggan, idpenjualan, besarhutang) VALUES ('%d','%d','%f')",
+                    $_POST["idpelanggan"], $next_id, abs($kembali));
+                $resultpiutang = db_query("SELECT idpelanggan, besarhutang  FROM piutang WHERE idpelanggan='%d'",
+                    $_POST["idpelanggan"]);
+                $datapiutang = db_fetch_object($resultpiutang);
+                if ($datapiutang->idpelanggan) {
+                    $besarhutangskrg = $datapiutang->besarhutang + abs($kembali);
+                    db_query("UPDATE piutang SET besarhutang='%f',uid='%d' WHERE idpelanggan='%d'",
+                        $besarhutangskrg, $user->uid, $_POST["idpelanggan"]);
+                } else {
+                    db_query("INSERT INTO piutang(idpelanggan,besarhutang,uid)VALUES('%d','%f','%d')",
+                        $_POST["idpelanggan"], abs($kembali), $user->uid);
+                }
+            }
+            if ($_POST["carabayar"] == "DEPOSIT") {
+                if (isset($_POST["idpelanggan"]) && !empty($_POST["idpelanggan"])) {
+                    $sisaDeposit = getTotalPembayaran($_POST["idpelanggan"]) - (getTotalHutang($_POST["idpelanggan"]) + getTotalPenggunaanDeposit($_POST["idpelanggan"]));
+                    $variables['idpelanggan'] = $_POST["idpelanggan"];
+                    $variables['deposit'] = $sisaDeposit;
+                    $variables['penggunaan'] = $_POST["bayar"];
+                    $variables['tglbayar'] = $waktujual;
+                    $variables['keterangan'] = 'Penggunaan deposit untuk pembayaran nota : ' . $no_nota . ' Tanggal : ' . $waktujual;
+                    $variables['idpenjualan'] = $next_id;
+                    penggunaandeposit($variables);
+                    syncHutangPelanggan($_POST["idpelanggan"]);
+                }
+            }
+        }
 		$detailTitipanLaundry = null;
 		if (isset($_POST['idtitipanlaundry']) && !empty($_POST['idtitipanlaundry'])){
 			$result = db_query("SELECT iddetail, idproduct, sisa, diambil FROM 

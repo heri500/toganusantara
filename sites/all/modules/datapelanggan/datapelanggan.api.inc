@@ -239,7 +239,7 @@ function get_pelanggan_data($IdPelanggan = null){
     $data = null;
     if (!empty($IdPelanggan)){
         $StrSQL = "SELECT idpelanggan, kodepelanggan, namapelanggan, telp, alamat, email, url_database, username, ";
-        $StrSQL .= "password FROM pelanggan WHERE idpelanggan='%d'";
+        $StrSQL .= "password, status_pelanggan FROM pelanggan WHERE idpelanggan='%d'";
         $result = db_query($StrSQL,$IdPelanggan);
         $data = db_fetch_object($result);
     }

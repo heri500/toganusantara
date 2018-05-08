@@ -30,12 +30,17 @@ function data_pelanggan(){
     _addJeditablePlugins();
 	drupal_add_js(
 		array(
-			'filepath' => file_directory_path()
+			'filepath' => file_directory_path(),
+            'status_options' => array('External','Internal'),
 		),
 		'setting');
 	$modulePath = drupal_get_path('module','datapelanggan');
 	$jsPath = $modulePath.'/js/datapelanggan.js';
 	drupal_add_js($jsPath);
+	$StatusPelanggan = '<select id="status_pelanggan" name="status_pelanggan">';
+    $StatusPelanggan .= '<option value="0">Eksternal</option>';
+    $StatusPelanggan .= '<option value="1">Internal</option>';
+    $StatusPelanggan .= '</select>';
 	$viewtabelpelanggan = '<form id="formpelanggan" action="'.base_path().'datapelanggan/simpanpelanggan" method="post"><div id="formplace" class="pelanggan">';
 	$viewtabelpelanggan .= '<label>KODE</label><input type="text" class=\"validate[required]\" id="kodepelanggan" name="kodepelanggan">';
 	$viewtabelpelanggan .= '<label>PELANGGAN</label><input class=\"validate[required]\" type="text" id="namapelanggan" name="namapelanggan">';
@@ -45,6 +50,7 @@ function data_pelanggan(){
     $viewtabelpelanggan .= '<label>SERVER</label><input type="text" id="url_database" name="url_database">';
     $viewtabelpelanggan .= '<label>USERNAME</label><input type="text" id="username" name="username">';
     $viewtabelpelanggan .= '<label>PASSWORD</label><input type="password" id="password" name="password">';
+    $viewtabelpelanggan .= '<label>STATUS</label>'.$StatusPelanggan;
 	$viewtabelpelanggan .= '<button style="font-size: 12px;">Tambah Pelanggan</button></div></form>';
 	$viewtabelpelanggan .= '<div class="button-sync"><button id="sync-hutang-pelanggan" style="font-size: 12px;">Sync Hutang Pelanggan</button></div>';
 	$viewtabelpelanggan .= '<div style="width: 80%;">'.tabel_pelanggan().'</div>';
@@ -229,13 +235,14 @@ function tabel_pelanggan(){
 	$tabelPelanggan .= '<th>PIUTANG</th>';
 	$tabelPelanggan .= '<th>AKHIR</th>';
 	$tabelPelanggan .= '<th class="tanggal">UPDATE</th>';
+    $tabelPelanggan .= '<th>STATUS</th>';
 	$tabelPelanggan .= '</tr>';
 	$tabelPelanggan .= '</thead>';
 	$tabelPelanggan .= '<tfoot>';
 	$tabelPelanggan .= '<tr>';
 	$tabelPelanggan .= '<th style="text-align:right;" colspan="11">Total:&nbsp;&nbsp;</th>';
 	$totalhutang = getTotalHutangPelanggan();
-	$tabelPelanggan .= '<th class="angka" colspan="3">Rp. '.number_format($totalhutang,0,',','.').'</th>';
+	$tabelPelanggan .= '<th class="angka" colspan="4">Rp. '.number_format($totalhutang,0,',','.').'</th>';
 	$tabelPelanggan .= '</tr>';
 	$tabelPelanggan .= '</tfoot>';
 	$tabelPelanggan .= '</table>';
@@ -285,11 +292,16 @@ function update_pelanggan(){
         $sql_update = "UPDATE pelanggan SET url_database='%s' WHERE idpelanggan='%d'";
     }elseif ($KOLOM == '7'){
         $sql_update = "UPDATE pelanggan SET username='%s' WHERE idpelanggan='%d'";
-    }elseif ($KOLOM == '7'){
+    }elseif ($KOLOM == '10'){
         $sql_update = "UPDATE pelanggan SET password='%s' WHERE idpelanggan='%d'";
+    }elseif ($KOLOM == '14'){
+        $sql_update = "UPDATE pelanggan SET status_pelanggan='%d' WHERE idpelanggan='%d'";
     }
-
 	db_query($sql_update,$NILAI,$PELANGGAN_ID);
+    if ($KOLOM == '14'){
+        $ArrayStatus = array('External','Internal');
+        $NILAI = $ArrayStatus[$NILAI];
+    }
 	echo $NILAI;
 	exit();
 }
