@@ -112,47 +112,51 @@ function pembelian(){
 	return $pembelian;
 }
 
-function simpan_pembelian(){
-	//nonota, idpemakai, total, bayar, kembali
-	if ($_POST["detail_produk"] AND $_POST["bayar"] >= 0 AND $_POST["totalbelanja"]){
-		$result = db_query("SELECT idpembelian FROM pembelian ORDER BY idpembelian DESC LIMIT 1");
-		$data = db_fetch_object($result);
-		if ($data->idpembelian > 0){
-			$next_id = $data->idpembelian + 1;
-		}else{
-			$next_id = 1;
-		}
-		$no_nota = buat_nota($next_id);
-		$kembali = $_POST["bayar"] - $_POST["totalbelanja"];
-		date_default_timezone_set('Asia/Jakarta');
-		$waktujual = $_POST["tglbeli"]." ".date("H:i:s");
-		$caraBayar = $_POST["carabayar"];
-		global $user;
-		db_query("INSERT INTO pembelian (nonota, idpemakai, total, bayar, kembali, tglpembelian, carabayar, idsupplier) VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%s', '%d')",
-		$no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual, $caraBayar,$_POST["idsupplier"]);
-		$next_id = db_last_insert_id('pembelian', 'idpembelian');
-		print $next_id;
-		if ($kembali < 0){
-			db_query("INSERT INTO detailhutang (idsupplier, idpembelian, besarhutang) VALUES ('%d','%d','%f')",
-			$_POST["idsupplier"],$next_id,abs($kembali));
-			$resultpiutang = db_query("SELECT idsupplier, besarhutang  FROM hutang WHERE idsupplier='%d'",
-			$_POST["idsupplier"]);
-			$datapiutang = db_fetch_object($resultpiutang);
-			if ($datapiutang->idsupplier){
-				$besarhutangskrg = $datapiutang->besarhutang + abs($kembali);
-				db_query("UPDATE hutang SET besarhutang='%f',uid='%d' WHERE idsupplier='%d'",
-				$besarhutangskrg,$user->uid,$_POST["idsupplier"]);
-			}else{
-				db_query("INSERT INTO hutang(idsupplier,besarhutang,uid)VALUES('%d','%f','%d')",
-				$_POST["idsupplier"],abs($kembali),$user->uid);	
-			}
-		}
-		$pecahdetail = explode("&",$_POST["detail_produk"]);
-		$totalmodal = 0;
-		foreach ($pecahdetail as $parameter){
-			$pecahparameter = explode("=",$parameter);
-			$splitParam1 = explode('_', $pecahparameter[0]);
-			if ($splitParam1[0] == 'cekbox') {
+function simpan_pembelian()
+{
+    //nonota, idpemakai, total, bayar, kembali
+    if ($_POST["detail_produk"] AND $_POST["bayar"] >= 0 AND $_POST["totalbelanja"]) {
+        $result = db_query("SELECT idpembelian FROM pembelian ORDER BY idpembelian DESC LIMIT 1");
+        $data = db_fetch_object($result);
+        if ($data->idpembelian > 0) {
+            $next_id = $data->idpembelian + 1;
+        } else {
+            $next_id = 1;
+        }
+        $no_nota = buat_nota($next_id);
+        $kembali = $_POST["bayar"] - $_POST["totalbelanja"];
+        date_default_timezone_set('Asia/Jakarta');
+        $waktujual = $_POST["tglbeli"] . " " . date("H:i:s");
+        $caraBayar = $_POST["carabayar"];
+        global $user;
+        $StatusSupplier = 0;
+        if (isset($_POST["idsupplier"]) && !empty($_POST["idsupplier"])) {
+            $StatusSupplier = db_result(db_query('SELECT status_supplier FROM supplier WHERE idsupplier=%d', $_POST["idsupplier"]));
+        }
+        db_query("INSERT INTO pembelian (nonota, idpemakai, total, bayar, kembali, tglpembelian, carabayar, idsupplier, status_supplier) VALUES ('%s', '%d', '%f', '%f', '%f', '%s', '%s', '%d', '%d')",
+            $no_nota, $user->uid, $_POST["totalbelanja"], $_POST["bayar"], $kembali, $waktujual, $caraBayar, $_POST["idsupplier"], $StatusSupplier);
+        $next_id = db_last_insert_id('pembelian', 'idpembelian');
+        print $next_id;
+        if ($kembali < 0 && $StatusSupplier == 0) {
+            db_query("INSERT INTO detailhutang (idsupplier, idpembelian, besarhutang) VALUES ('%d','%d','%f')",
+                $_POST["idsupplier"], $next_id, abs($kembali));
+            $resultpiutang = db_query("SELECT idsupplier, besarhutang  FROM hutang WHERE idsupplier='%d'",
+                $_POST["idsupplier"]);
+            $datapiutang = db_fetch_object($resultpiutang);
+            if ($datapiutang->idsupplier) {
+                $besarhutangskrg = $datapiutang->besarhutang + abs($kembali);
+                db_query("UPDATE hutang SET besarhutang='%f',uid='%d' WHERE idsupplier='%d'",
+                    $besarhutangskrg, $user->uid, $_POST["idsupplier"]);
+            } else {
+                db_query("INSERT INTO hutang(idsupplier,besarhutang,uid)VALUES('%d','%f','%d')",
+                    $_POST["idsupplier"], abs($kembali), $user->uid);
+            }
+        }
+        $pecahdetail = explode("&", $_POST["detail_produk"]);
+        foreach ($pecahdetail as $parameter) {
+            $pecahparameter = explode("=", $parameter);
+            $splitParam1 = explode('_', $pecahparameter[0]);
+            if ($splitParam1[0] == 'cekbox') {
                 $pecahnilai = explode("___", remove_utf8_bom($pecahparameter[1]));
                 $IDPRODUK = $pecahnilai[0];
                 $QTY = $pecahnilai[1];
@@ -178,11 +182,11 @@ function simpan_pembelian(){
                 db_query("INSERT INTO transaksistock (idproduk, idpembelian, stocksebelum, masuk, stocksetelah, keterangan) VALUES 
 			    ('%d', '%d', '%f', '%f', '%f', '%s')", $IDPRODUK, $next_id, $STOKSEBELUM, $QTY, $STOKSEKARANG, $KETERANGAN);
             }
-		}
-	}else{
-		print 'error';	
-	}
-	exit();
+        }
+    } else {
+        print 'error';
+    }
+    exit();
 }
 function buat_nota($idpembelian){
 	if ($idpembelian > 0 AND $idpembelian < 10){
@@ -321,6 +325,10 @@ function view_tabel_pembelian(){
     $path = drupal_get_path('theme', 'cti_flex');
     $form_style = $path.'/css/custom-style.css';
     drupal_add_css($form_style, 'theme', 'all', FALSE);
+    $SelectedTypePelanggan = 0;
+    if (isset($_POST["type_pelanggan"])){
+        $SelectedTypePelanggan = $_POST["type_pelanggan"];
+    }
     if ($_POST["tgl1"] AND $_POST["tgl2"]){
         $tgl1 = $_POST["tgl1"];
         $tgl2 = $_POST["tgl2"];
@@ -388,17 +396,29 @@ function view_tabel_pembelian(){
             'tglAkhir' => $tgl2,
             'filterId' => $filterId,
             'namahari' => $arrayhari,
+            'type_pelanggan' => $SelectedTypePelanggan,
         ),
         'setting');
     $modulePath = drupal_get_path('module','pembelian');
     $jsPath = $modulePath.'/js/tabel.pembelian.js';
     drupal_add_js($jsPath);
+    $TypePelanggan = '<select id="type_pelanggan" name="type_pelanggan">';
+    if ($SelectedTypePelanggan == 0){
+        $SelectedExternal = 'selected';
+        $SelectedInternal = '';
+    }else{
+        $SelectedExternal = '';
+        $SelectedInternal = 'selected';
+    }
+    $TypePelanggan .= '<option value="0" '.$SelectedExternal.'>External</option>';
+    $TypePelanggan .= '<option value="1" '.$SelectedInternal.'>Internal</option>';
+    $TypePelanggan .= '</select>';
     $pilihantampil = '<select id="pilihantampil" name="pilihantampil">';
     $pilihantampil .= '<option '.$nota.'>NOTA</option>';
     $pilihantampil .= '<option '.$produk.'>PRODUK</option>';
     $pilihantampil .= '</select>';
     $pilihperiode = '<form action="'.base_path().'pembelian/viewpembelian" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PEMBELIAN </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
-    $pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.'<button>LIHAT PEMBELIAN</button></div></form>';
+    $pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.$TypePelanggan.'<button>LIHAT PEMBELIAN</button></div></form>';
     $viewpembelian = $pilihperiode.'<div id="viewpembelian">'.$tabeltampil.'</div>';
     $viewpembelian .= '<div id="dialogdetail" title="DETAIL PEMBELIAN">';
     $viewpembelian .= '<div id="table-detail-wrapper"></div>';

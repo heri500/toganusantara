@@ -34,7 +34,7 @@ function tampiltabeljual(){
 			'aaSorting': [[urutan, 'desc']],
 			'processing': true,
 			'serverSide': true,
-			'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idpelanggan='+ Drupal.settings.filterId,
+			'ajax': alamatServer + 'sites/all/modules/datapelanggan/server_processing.php?request_data=penjualan&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idpelanggan='+ Drupal.settings.filterId +'&type_pelanggan=' + Drupal.settings.type_pelanggan,
 			buttons: [
 				{
 					extend: 'colvis',
@@ -208,7 +208,7 @@ function tampiltabeljualdetail(){
 		'aaSorting': [[1, 'asc']],
 		'sDom': '<"H"<"toolbar">fr>t<"F"ip>',
 		'aoColumnDefs': [
-			{ 'bSortable': false, 'aTargets': [ 0 ] }
+			{ 'bSortable': false, 'aTargets': [ 0,5,6 ] }
 		],
 		'processing': true,
 		'serverSide': true,

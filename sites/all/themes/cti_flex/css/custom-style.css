@@ -926,9 +926,11 @@ form.form-item-lined-up, .form-item-lined-up{
 .form-item-lined-up .form-item textarea{
 	display: inline-block;
 }
-.form-item-lined-up .form-item textarea,
 .form-item-lined-up .resizable-textarea{
 	width: 100% !important;
+}
+.form-item-lined-up .form-item label{
+	vertical-align: top;
 }
 .margin-bottom-10{
 	margin-bottom: 10px !important;

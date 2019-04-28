@@ -166,14 +166,14 @@ function getTotalPembelian($field_name = null, $tglAwal = null, $tglAkhir = null
 		$tglAwal = $tglAwal.' 00:00';
 		$tglAkhir = $tglAkhir.' 23:59';
 		if ($carabayar == 0){
-			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s'",$tglAwal,$tglAkhir));
+			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE (tglpembelian BETWEEN '%s' AND '%s') AND status_supplier=0",$tglAwal,$tglAkhir));
 		}else if ($carabayar == 1){
 			//Pembayaran Tunai atau DP
-			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0",$tglAwal,$tglAkhir));
-			$totalPembelian = $totalPembelian + db_result(db_query("SELECT SUM(bayar) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG'))",$tglAwal,$tglAkhir));
+			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0 AND status_supplier=0",$tglAwal,$tglAkhir));
+			$totalPembelian = $totalPembelian + db_result(db_query("SELECT SUM(bayar) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND status_supplier=0",$tglAwal,$tglAkhir));
 		}else if($carabayar == 2){
 			//Pembayaran Debit Atau Giro
-			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO')",$tglAwal,$tglAkhir));
+			$totalPembelian = db_result(db_query("SELECT SUM($field_name) FROM pembelian WHERE tglpembelian BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO') AND status_supplier=0",$tglAwal,$tglAkhir));
 		}
 	}
 	return $totalPembelian;
@@ -182,7 +182,7 @@ function getTotalPembelian2($field_name1 = null, $field_name2 = null, $tglAwal =
 	if (!empty($field_name1) && !empty($field_name2) && !empty($tglAwal) && !empty($tglAkhir)){
 		$totalPembelian = db_result(db_query("SELECT SUM($field_name1*$field_name2) FROM detailpembelian AS detail
 		LEFT JOIN pembelian AS penj ON detail.idpembelian = penj.idpembelian
-		WHERE penj.tglpembelian BETWEEN '%s' AND '%s'",$tglAwal,$tglAkhir));
+		WHERE (penj.tglpembelian BETWEEN '%s' AND '%s') AND status_supplier=0",$tglAwal,$tglAkhir));
 	}
 	return $totalPembelian;
 }

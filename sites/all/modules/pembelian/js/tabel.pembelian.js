@@ -36,7 +36,7 @@ function tampiltabelbeli(){
             'aaSorting': [[urutan, 'desc']],
             'processing': true,
             'serverSide': true,
-            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=pembelian&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId,
+            'ajax': Drupal.settings.basePath + 'sites/all/modules/datapelanggan/server_processing.php?request_data=pembelian&tglawal='+ tglAwal +'&tglakhir='+ tglAkhir +'&idsupplier='+ Drupal.settings.filterId +'&type_pelanggan=' + Drupal.settings.type_pelanggan,
             buttons: [
                 {
                     extend: 'colvis',

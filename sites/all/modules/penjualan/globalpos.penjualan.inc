@@ -4,7 +4,11 @@ function view_tabel_penjualan(){
     $path = drupal_get_path('theme', 'cti_flex');
     $form_style = $path.'/css/custom-style.css';
     drupal_add_css($form_style, 'theme', 'all', FALSE);
-	if ($_POST["tgl1"] AND $_POST["tgl2"]){
+    $SelectedTypePelanggan = 0;
+    if (isset($_POST["type_pelanggan"])){
+        $SelectedTypePelanggan = $_POST["type_pelanggan"];
+    }
+	if (isset($_POST["tgl1"]) && isset($_POST["tgl2"])){
 		$tgl1 = $_POST["tgl1"];
 		$tgl2 = $_POST["tgl2"];
 	}else{
@@ -74,6 +78,7 @@ function view_tabel_penjualan(){
 			'tglAkhir' => $tgl2,
 			'filterId' => $filterId,
             'server' => $ServerData,
+            'type_pelanggan' => $SelectedTypePelanggan,
 		),
 		'setting');
 	$modulePath = drupal_get_path('module','penjualan');
@@ -83,15 +88,27 @@ function view_tabel_penjualan(){
 	$pilihantampil .= '<option '.$nota.'>NOTA</option>';
 	$pilihantampil .= '<option '.$produk.'>PRODUK</option>';
 	$pilihantampil .= '</select>';
-	$pilihperiode = '<form action="'.base_path().'penjualan/viewpenjualan" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PENJUALAN </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
-	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.'<button>LIHAT PENJUALAN</button></div>';
+    $TypePelanggan = '<select id="type_pelanggan" name="type_pelanggan">';
+    if ($SelectedTypePelanggan == 0){
+        $SelectedExternal = 'selected';
+        $SelectedInternal = '';
+    }else{
+        $SelectedExternal = '';
+        $SelectedInternal = 'selected';
+    }
+    $TypePelanggan .= '<option value="0" '.$SelectedExternal.'>External</option>';
+    $TypePelanggan .= '<option value="1" '.$SelectedInternal.'>Internal</option>';
+    $TypePelanggan .= '</select>';
+    $pilihperiode = '<form action="'.base_path().'penjualan/viewpenjualan" method="post"><div id="pilihanperiode"><label>PILIH PERIODE PENJUALAN </label><input readonly="readonly" type="text" id="tgl1" name="tgl1" value="'.$tgl1.'">';
+	$pilihperiode .= '<input readonly="readonly" type="text" id="tgl2" name="tgl2" value="'.$tgl2.'">'.$pilihantampil.'&nbsp;'.$addedFilter.$TypePelanggan.'<button>LIHAT PENJUALAN</button></div>';
     $IdPelanggan = isset($_GET['server']) ? $_GET['server'] : 0;
     if ($_SERVER[HTTP_HOST] == 'toganusantara.dev' || $_SERVER[HTTP_HOST] == 'pusat.toganusantara.com') {
         $pilihanPelanggan = '<div class="margin-bottom-10">'.createPelangganSelection($IdPelanggan, 'PILIH SERVER', false,'idserver').'</div>';
     }else{
         $pilihanPelanggan = '';
     }
-    $pilihperiode .= $pilihanPelanggan.'</form>';
+    $pilihperiode .= $pilihanPelanggan;
+    $pilihperiode .= '</form>';
 	$viewpenjualan = $pilihperiode.'<div id="viewpenjualan">'.$tabeltampil.'</div>';
 	$viewpenjualan .= '<div id="dialogdetail" title="DETAIL PENJUALAN">';
 	$viewpenjualan .= '<div id="table-detail-wrapper"></div>';

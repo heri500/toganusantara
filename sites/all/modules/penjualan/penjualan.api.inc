@@ -280,26 +280,26 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 		$tglAkhir = $tglAkhir.' 23:59';
 		if ($carabayar == 0){
 			if (!empty($idPelanggan)){
-				$totalPenjualan = db_result(db_query("SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND idpelanggan=%d",$tglAwal,$tglAkhir, $idPelanggan));
+				$totalPenjualan = db_result(db_query("SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND idpelanggan=%d AND status_pelanggan=0",$tglAwal,$tglAkhir, $idPelanggan));
 			}else{
-				$totalPenjualan = db_result(db_query("SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s'",$tglAwal,$tglAkhir));
+				$totalPenjualan = db_result(db_query("SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND status_pelanggan=0",$tglAwal,$tglAkhir));
 			}
 		}else if($carabayar == 1){
 			//Untuk mendapatkan total cash saja
 			if (empty($idPelanggan)){
-				$strSQL = "SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0";
+				$strSQL = "SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0 AND status_pelanggan=0";
 				$totalPenjualanCash = db_result(db_query($strSQL,$tglAwal,$tglAkhir));
 			}else{
-				$strSQL = "SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0 AND idpelanggan=%d";
+				$strSQL = "SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar='TUNAI' AND kembali >= 0 AND idpelanggan=%d AND status_pelanggan=0";
 				$totalPenjualanCash = db_result(db_query($strSQL,$tglAwal,$tglAkhir,$idPelanggan));
 			}
 			if (empty($idPelanggan)) {
 				$strSQL = "SELECT SUM(bayar) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND ";
-				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG'))";
+				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND status_pelanggan=0";
 				$totalPenjualanDP = db_result(db_query($strSQL,$tglAwal,$tglAkhir));
 			}else{
 				$strSQL = "SELECT SUM(bayar) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND ";
-				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND idpelanggan = %d";
+				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND idpelanggan = %d AND status_pelanggan=0";
 				$totalPenjualanDP = db_result(db_query($strSQL,$tglAwal,$tglAkhir,$idPelanggan));
 			}
 			$totalPenjualan = $totalPenjualanCash + $totalPenjualanDP;
@@ -307,11 +307,11 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 			//Untuk mendapatkan total hutang dari penjualan
 			if (empty($idPelanggan)) {
 				$strSQL = "SELECT SUM(kembali) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND ";
-				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG'))";
+				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND status_pelanggan=0";
 				$totalPenjualan = db_result(db_query($strSQL,$tglAwal,$tglAkhir));
 			}else{
 				$strSQL = "SELECT SUM(kembali) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND ";
-				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND idpelanggan = %d";
+				$strSQL .= "'%s' AND ((carabayar='TUNAI' AND kembali < 0) OR (carabayar='HUTANG')) AND idpelanggan = %d AND status_pelanggan=0";
 				$totalPenjualan = db_result(db_query($strSQL,$tglAwal,$tglAkhir,$idPelanggan));
 			}
 		}else if($carabayar == 3){
@@ -319,7 +319,7 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 			if (empty($idPelanggan)) {
 				$totalPenjualan = db_result(
 					db_query(
-						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO')",
+						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO') AND status_pelanggan=0",
 						$tglAwal,
 						$tglAkhir
 					)
@@ -327,7 +327,7 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 			}else{
 				$totalPenjualan = db_result(
 					db_query(
-						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO') AND idpelanggan=%d",
+						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar IN ('DEBIT','GIRO') AND idpelanggan=%d AND status_pelanggan=0",
 						$tglAwal,
 						$tglAkhir,
 						$idPelanggan
@@ -339,7 +339,7 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 			if (empty($idPelanggan)) {
 				$totalPenjualan = db_result(
 					db_query(
-						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar = 'DEPOSIT'",
+						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar = 'DEPOSIT' AND status_pelanggan=0",
 						$tglAwal,
 						$tglAkhir
 					)
@@ -347,7 +347,7 @@ function getTotalPenjualan($field_name = null, $tglAwal = null, $tglAkhir = null
 			}else{
 				$totalPenjualan = db_result(
 					db_query(
-						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar = 'DEPOSIT' AND idpelanggan=%d",
+						"SELECT SUM($field_name) FROM penjualan WHERE tglpenjualan BETWEEN '%s' AND '%s' AND carabayar = 'DEPOSIT' AND idpelanggan=%d AND status_pelanggan=0",
 						$tglAwal,
 						$tglAkhir,
 						$idPelanggan
@@ -367,7 +367,7 @@ function getTotalPenjualan2($field_name1 = null, $field_name2 = null, $tglAwal =
 				db_query(
 					"SELECT SUM($field_name1*$field_name2) FROM detailpenjualan AS detail
 					LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan
-					WHERE penj.tglpenjualan BETWEEN '%s' AND '%s'",
+					WHERE penj.tglpenjualan BETWEEN '%s' AND '%s' AND status_pelanggan=0",
 					$tglAwal,
 					$tglAkhir
 				)
@@ -378,7 +378,7 @@ function getTotalPenjualan2($field_name1 = null, $field_name2 = null, $tglAwal =
 					"SELECT SUM($field_name1*$field_name2) FROM detailpenjualan AS detail
 					LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan
 					LEFT JOIN product AS prod ON detail.idproduct = prod.idproduct
-					WHERE penj.tglpenjualan BETWEEN '%s' AND '%s' AND prod.idsupplier=%d ",
+					WHERE penj.tglpenjualan BETWEEN '%s' AND '%s' AND prod.idsupplier=%d AND status_pelanggan=0",
 					$tglAwal,
 					$tglAkhir,
 					$idSupplier

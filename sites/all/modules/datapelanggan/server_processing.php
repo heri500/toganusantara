@@ -249,6 +249,7 @@ function serverSidePenjualan($request){
 	$tglAwal = $_REQUEST['tglawal'].' 00:00';
 	$tglAkhir = $_REQUEST['tglakhir'].' 23:59';
 	$idpelanggan = $_REQUEST['idpelanggan'];
+	$TypePelanggan = $_REQUEST['type_pelanggan'];
 	$searchQuery = $searchArray['value'];
 	$arrayColumn = array(
 		'penj.idpenjualan','penj.nonota','penj.tglpenjualan','penj.tglpenjualan',
@@ -293,6 +294,7 @@ function serverSidePenjualan($request){
 		$strCriteria .= "OR plg.namapelanggan LIKE '%%%s%%' OR penj.carabayar LIKE '%%%s%%' ";
 		$strCriteria .= ")";
 	}
+    $strCriteria .= ' AND penj.status_pelanggan = '.$TypePelanggan;
 	if ($pageLength == -1){
 		$strSQL .= $strCriteria." ORDER BY $orderColumn";
 	}else{
@@ -503,20 +505,22 @@ function serverSidePenjualan2($request){
 	$strSQL .= "supp.namasupplier, SUM(detail.jumlah) AS totalqty,";
 	$strSQL .= "MIN(detail.hargapokok) AS minhargapokok,MAX(detail.hargapokok) AS maxhargapokok,";
 	$strSQL .= "MIN(detail.hargajual) AS minhargajual, MAX(detail.hargajual) AS maxhargajual, ";
-	$strSQL .= "SUM(detail.hargapokok*detail.jumlah) AS totalmodal, SUM(detail.hargajual*detail.jumlah) AS subtotal,";
-	$strSQL .= "SUM((detail.hargajual-detail.hargapokok)*detail.jumlah) AS laba ";
-	$strSQLFilteredTotal = "SELECT COUNT(detail.idproduct) ";
+	$strSQL .= "SUM(detail.hargapokok*detail.jumlah) AS totalmodal, ";
+    $strSQL .= "SUM(((detail.hargajual - (detail.hargajual*detail.diskon/100)) + ";
+    $strSQL .= "((detail.hargajual - (detail.hargajual*detail.diskon/100)) * detail.ppn/100))*detail.jumlah) AS subtotal,";
+	$strSQL .= "SUM((((detail.hargajual - (detail.hargajual*detail.diskon/100)) + ((detail.hargajual - (detail.hargajual*detail.diskon/100)) * detail.ppn/100)) - detail.hargapokok)*detail.jumlah) AS laba ";
 	$strSQL .= "FROM detailpenjualan AS detail ";
-	$strSQLFilteredTotal .= "FROM detailpenjualan AS detail ";
-	$strSQL .= "LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan ";
+    $strSQL .= "LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan ";
 	$strSQL .= "LEFT JOIN product AS prod ON detail.idproduct = prod.idproduct ";
 	$strSQL .= "LEFT JOIN supplier AS supp ON prod.idsupplier = supp.idsupplier ";
-	if (!empty($idSupplier)){
+    if (!empty($idSupplier)){
 		$strSQL .= "WHERE penj.tglpenjualan BETWEEN '%s' AND '%s' AND prod.idsupplier = %d ";
 	}else{
 		$strSQL .= "WHERE penj.tglpenjualan BETWEEN '%s' AND '%s' ";
 	}
-	$strSQLFilteredTotal .= "LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan ";
+    $strSQLFilteredTotal = "SELECT COUNT(detail.idproduct) ";
+    $strSQLFilteredTotal .= "FROM detailpenjualan AS detail ";
+    $strSQLFilteredTotal .= "LEFT JOIN penjualan AS penj ON detail.idpenjualan = penj.idpenjualan ";
 	$strSQLFilteredTotal .= "LEFT JOIN product AS prod ON detail.idproduct = prod.idproduct ";
 	$strSQLFilteredTotal .= "LEFT JOIN supplier AS supp ON prod.idsupplier = supp.idsupplier ";
 	if (!empty($idSupplier)){
@@ -1139,10 +1143,10 @@ function serverSideDetailPenjualan($request){
 		2 => 'product.namaproduct',
 		3 => 'detail.jumlah',
 		4 => 'detail.hargajual',
-		5 => 'detail.hargapokok',
-		6 => '(detail.jumlah*detail.hargajual)',
-		7 => '(detail.jumlah*detail.hargapokok)',
-		8 => '(detail.jumlah*(detail.hargajual - detail.hargapokok))',
+		7 => 'detail.hargapokok',
+		8 => '(detail.jumlah*detail.hargajual)',
+		9 => '(detail.jumlah*detail.hargapokok)',
+		10 => '(detail.jumlah*(detail.hargajual - detail.hargapokok))',
 	);
 	$orderColumnArray = isset($_REQUEST['order']) && !empty($_REQUEST['order']) ? $_REQUEST['order'] : array( 0 => array('column' => 1, 'dir' => 'ASC'));
 	$orderColumn = $arrayColumn[$orderColumnArray[0]['column']].' '.$orderColumnArray[0]['dir'];
@@ -1161,7 +1165,7 @@ function serverSideDetailPenjualan($request){
     $strSQL .= '((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) + ';
     $strSQL .= '(((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) * ppn/100)  AS subtotalppn,';
 	$strSQL .= '(detail.hargapokok*detail.jumlah) AS modal,';
-	$strSQL .= '((detail.hargajual-detail.hargapokok)*detail.jumlah) AS laba ';
+	$strSQL .= '(((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) + (((detail.hargajual - (detail.hargajual*diskon/100))*detail.jumlah) * ppn/100) - (detail.hargapokok * detail.jumlah)) AS laba ';
 	$strSQL .= 'FROM detailpenjualan detail LEFT JOIN product product ';
 	$strSQL .= 'ON detail.idproduct=product.idproduct ';
 	$strSQL .= 'LEFT JOIN supplier supp ON product.idsupplier=supp.idsupplier ';
@@ -1218,7 +1222,7 @@ function serverSideDetailPenjualan($request){
 		$rowData[] = $data->iddetail;
 		$output[] = $rowData;
 	}
-	$recordsTotal = db_result(db_query("SELECT COUNT(iddetail) FROM detailpenjualan"));
+	$recordsTotal = db_result(db_query("SELECT COUNT(iddetail) FROM detailpenjualan WHERE idpenjualan=%d ",$idPenjualan));
 	return array(
 		"draw"            => isset ( $request['draw'] ) ?
 			intval( $request['draw'] ) :
@@ -1809,6 +1813,7 @@ function serverSidePembelian($request){
     $tglAkhir = $_REQUEST['tglakhir'].' 23:59';
     $idsupplier = $_REQUEST['idsupplier'];
     $searchQuery = $searchArray['value'];
+    $TypePelanggan = $_REQUEST['type_pelanggan'];
     $arrayhari = arrayHariServerSide();
     $arrayColumn = array(
         'pemb.idpembelian','pemb.nonota','pemb.tglpembelian','pemb.tglpembelian',
@@ -1853,6 +1858,7 @@ function serverSidePembelian($request){
         $strCriteria .= "OR supp.namasupplier LIKE '%%%s%%' OR pemb.carabayar LIKE '%%%s%%' ";
         $strCriteria .= ")";
     }
+    $strCriteria .= ' AND pemb.status_supplier = '.$TypePelanggan;
     if ($pageLength == -1){
         $strSQL .= $strCriteria." ORDER BY $orderColumn";
     }else{

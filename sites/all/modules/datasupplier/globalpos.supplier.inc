@@ -17,11 +17,13 @@ function data_supplier(){
 	drupal_add_js('misc/media/datatables/js/jquery.dataTables.min.js');
 	drupal_add_js('misc/media/datatables/ZeroClipboard/ZeroClipboard.js');
 	drupal_add_js('misc/media/datatables/js/TableTools.min.js');
-	drupal_add_js('misc/media/jquery.jeditable.js');
+	//drupal_add_js('misc/media/jquery.jeditable.js');
 	drupal_add_js('misc/media/jquery.autotab-1.1b.js');
+    _addJeditablePlugins();
     drupal_add_js(
         array(
-            'filepath' => file_directory_path()
+            'filepath' => file_directory_path(),
+            'status_options' => array('External','Internal'),
         ),
         'setting');
     $modulePath = drupal_get_path('module','datasupplier');
@@ -33,6 +35,11 @@ function data_supplier(){
 	$viewtabelsupplier .= '<label>TELEPON</label><input type="text" id="telp" name="telp">';
 	$viewtabelsupplier .= '<label>ALAMAT</label><input type="text" id="alamat" name="alamat">';
 	$viewtabelsupplier .= '<label>EMAIL</label><input type="text" id="email" name="email">';
+    $StatusSupplier = '<select id="status_pelanggan" name="status_pelanggan">';
+    $StatusSupplier .= '<option value="0">Eksternal</option>';
+    $StatusSupplier .= '<option value="1">Internal</option>';
+    $StatusSupplier .= '</select>';
+    $viewtabelsupplier .= '<label>STATUS</label>'.$StatusSupplier;
 	$viewtabelsupplier .= '<button style="font-size: 12px;">Tambah Supplier</button></div></form>';
 	$viewtabelsupplier .= '<div style="width: 80%;">'.tabel_supplier().'</div>';
 	$viewtabelsupplier .= '<div id="dialogdetailhutang" title="DETAIL HUTANG DAN PEMBAYARAN"><div id="tempatnilaihutang"></div><div id="detailpiutang"></div><div id="detailpembayaran">a</div></div>';
@@ -63,11 +70,13 @@ function tabel_supplier(){
 	$tabelsupplier .= '<th>HUTANG</th>';
 	$tabelsupplier .= '<th>AKHIR</th>';
 	$tabelsupplier .= '<th class="tanggal">UPDATE</th>';
+    $tabelsupplier .= '<th>STATUS</th>';
 	$tabelsupplier .= '</tr>';
 	$tabelsupplier .= '</thead>';
 	$tabelsupplier .= '<tbody>';
 	$totalhutang = 0;
-	$result = db_query("SELECT idsupplier,kodesupplier,namasupplier,telp,alamat,email FROM supplier ORDER BY kodesupplier,namasupplier");
+    $StatusSupplier = array('Eksternal','Internal');
+	$result = db_query("SELECT idsupplier,kodesupplier,namasupplier,telp,alamat,email, status_supplier FROM supplier ORDER BY kodesupplier,namasupplier");
 	while ($data = db_fetch_object($result)){
 		$tabelsupplier .= '<tr id="'.$data->idsupplier.'">';
 		$resulthutang = db_query("SELECT besarhutang,pembayaranterakhir ,SUBSTR(last_update,1,10) AS bayarterakhir 
@@ -87,13 +96,14 @@ function tabel_supplier(){
 		$tabelsupplier .= '<td class="angka">'.number_format($datahutang->besarhutang,0,",",".").'</td>';
 		$tabelsupplier .= '<td class="angka">'.number_format($datahutang->pembayaranterakhir,0,",",".").'</td>';
 		$tabelsupplier .= '<td class="center">'.$datahutang->bayarterakhir.'</td>';
+        $tabelsupplier .= '<td class="editable2">'.$StatusSupplier[$data->status_supplier].'</td>';
 		$tabelsupplier .= '</tr>';
 	}
 	$tabelsupplier .= '</tbody>';
 	$tabelsupplier .= '<tfoot>';
 	$tabelsupplier .= '<tr>';
 	$tabelsupplier .= '<th style="text-align:right" colspan="7">Total:&nbsp;&nbsp;</th>';
-	$tabelsupplier .= '<th style="text-align: right" colspan="3">Rp. '.number_format($totalhutang,0,",",".").'&nbsp;&nbsp;</th>';
+	$tabelsupplier .= '<th style="text-align: right" colspan="4">Rp. '.number_format($totalhutang,0,",",".").'&nbsp;&nbsp;</th>';
 	$tabelsupplier .= '</tr>';
 	$tabelsupplier .= '</tfoot>';
 	$tabelsupplier .= '</table>';
@@ -102,13 +112,14 @@ function tabel_supplier(){
 
 function simpan_supplier(){
 	if ($_POST["kodesupplier"] AND $_POST["namasupplier"]){
-		db_query("INSERT INTO supplier(kodesupplier,namasupplier,telp,alamat,email) VALUES('%s','%s','%s','%s','%s')",
-		strtoupper($_POST["kodesupplier"]),$_POST["namasupplier"],$_POST["telp"],$_POST["alamat"],$_POST["email"]);
+		db_query("INSERT INTO supplier(kodesupplier,namasupplier,telp,alamat,email, status_supplier) VALUES('%s','%s','%s','%s','%s','%d')",
+		strtoupper($_POST["kodesupplier"]),$_POST["namasupplier"],$_POST["telp"],$_POST["alamat"],$_POST["email"],$_POST["status_supplier"]);
 		if ($_POST["asal"]){
-			$result = db_query("SELECT idsupplier FROM supplier WHERE kodesupplier='%s' AND namasupplier='%s'",
+			/*$result = db_query("SELECT idsupplier FROM supplier WHERE kodesupplier='%s' AND namasupplier='%s'",
 			strtoupper($_POST["kodesupplier"]),$_POST["namasupplier"]);
-			$data = db_fetch_object($result);
-			print $data->idsupplier;
+			$data = db_fetch_object($result);*/
+			$IdSupplier = db_last_insert_id('supplier','idsupplier');
+			print $IdSupplier;
 		}else{
 			drupal_goto("datasupplier/supplier");
 		}
@@ -131,8 +142,14 @@ function update_supplier(){
 		$sql_update = "UPDATE supplier SET alamat='%s' WHERE idsupplier='%d'";
 	}elseif ($KOLOM == "6"){
 		$sql_update = "UPDATE supplier SET email='%s' WHERE idsupplier='%d'";
-	}
+	}elseif ($KOLOM == "10"){
+        $sql_update = "UPDATE supplier SET status_supplier='%d' WHERE idsupplier='%d'";
+    }
 	db_query($sql_update,$NILAI,$SUPPLIER_ID);
+    if ($KOLOM == "10"){
+        $ArrStatus = array('External','Internal');
+        $NILAI = $ArrStatus[$NILAI];
+    }
 	echo $NILAI;
 	exit();	
 }
